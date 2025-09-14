@@ -14,24 +14,30 @@ else
     VERSION=`cat /usr/www/ok.version`
 fi
 
+if [ ! -e "/usr/www/ok_patch" ]; then
+    PATCH=0
+else
+    PATCH=`cat /usr/www/ok_patch`
+fi
+
 if [ ! -e "$CNF_DATADIR/Run/led.color" ]; then
 
     LED_COLOR=00FF00
 else
-    LED_COLOR=`cat $CNF_DATADIR/Run/led.color`  
+    LED_COLOR=`cat $CNF_DATADIR/Run/led.color`
 fi
 
 if [ ! -e "$CNF_DATADIR/Run/led.pulse" ]; then
 	PULSE=0
 else
-	PULSE=`cat $CNF_DATADIR/Run/led.pulse` 
+	PULSE=`cat $CNF_DATADIR/Run/led.pulse`
 fi
 
-if [ ! -e "$CNF_DATADIR/Run/karotz.sleep" ]; then        
-        SLEEP=0                                    
-else                                             
+if [ ! -e "$CNF_DATADIR/Run/karotz.sleep" ]; then
+        SLEEP=0
+else
         SLEEP=1
-fi 
+fi
 
 if [ ! -e "$CNF_DATADIR/Run/karotz.sleep" ]; then
   SLEEP_TIME=0
@@ -41,11 +47,11 @@ fi
 
 
 if [ ! -e "$CNF_DATADIR/Run/Vera.ip" ]; then
-       VIP=0.0.0.0                                 
-else                                            
+       VIP=0.0.0.0
+else
        VIP=`cat $CNF_DATADIR/Run/Vera.ip`
-fi 
-                
+fi
+
 ifconfig -a | grep eth0  >>/dev/null 2>>/dev/null
 if [ $? = 0  ]; then
    ETH_MAC=`ifconfig eth0 | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}'` >>/dev/null 2>>/dev/null
@@ -53,24 +59,24 @@ else
    ETH_MAC="00:00:00:00:00:00"
 fi
 
-ifconfig -a | grep wlan0  >>/dev/null 2>>/dev/null                         
-if [ $? = 0  ]; then                            
+ifconfig -a | grep wlan0  >>/dev/null 2>>/dev/null
+if [ $? = 0  ]; then
    WLAN_MAC=`ifconfig wlan0 | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}'` >>/dev/null 2>>/dev/null
-else                                                                                                       
-   WLAN_MAC="00:00:00:00:00:00"                                                                             
-fi 
+else
+   WLAN_MAC="00:00:00:00:00:00"
+fi
 
 find  $CNF_DATADIR/Tmp -name "*.txt" > $CNF_DATADIR/Tmp/tmplst 2>>/dev/null
 CS=$(cat $CNF_DATADIR/Tmp/tmplst | wc -l)
 rm -f $CNF_DATADIR/Tmp/tmplst >> /dev/null 2>> /dev/null
 
-find  $CNF_DATADIR/Rfid -name "*.rfid" > $CNF_DATADIR/Tmp/tmplst 2>>/dev/null                                                
-NT=$(cat $CNF_DATADIR/Tmp/tmplst | wc -l)                                                                     
-rm -f $CNF_DATADIR/Tmp/tmplst >> /dev/null 2>> /dev/null         
+find  $CNF_DATADIR/Rfid -name "*.rfid" > $CNF_DATADIR/Tmp/tmplst 2>>/dev/null
+NT=$(cat $CNF_DATADIR/Tmp/tmplst | wc -l)
+rm -f $CNF_DATADIR/Tmp/tmplst >> /dev/null 2>> /dev/null
 
 
-NM=$( ls -R -A $CNF_DATADIR/Moods/fr/ | grep ".mp3" | wc -l) 2>>/dev/null 
-NS=$( ls -A $CNF_DATADIR/Sounds/ | grep ".mp3" | wc -l) 2>>/dev/null  
+NM=$( ls -R -A $CNF_DATADIR/Moods/fr/ | grep ".mp3" | wc -l) 2>>/dev/null
+NS=$( ls -A $CNF_DATADIR/Sounds/ | grep ".mp3" | wc -l) 2>>/dev/null
 NST=$( ls -A $CNF_DATADIR/Stories/ | grep ".mp3" | wc -l) 2>>/dev/null
 mount | grep usbkey >>/dev/null 2>>/dev/nul
 if [ $? -eq 0 ]; then
@@ -93,7 +99,7 @@ fi
 if [ "$FORMAT" == "xml" ] || [ "$FORMAT" == "XML" ]; then
   L0='<?xml version="1.0" encoding="iso-8859-1"?>\n'
   L1='<OPENKAROTZ>\n'
-  L2='\t<VERSION>'$VERSION'</VERSION>\n'
+  L2='\t<VERSION>'$VERSION'</VERSION>\n\t<PATCH>'$PATCH'</PATCH>\n'
   L3='\t<EARS_DISABLED>'$ED'</EARS_DISABLED>\n'
   L4='\t<SLEEP>'$SLEEP'</SLEEP>\n\t<SLEEP_TIME>'$SLEEP_TIME'</SLEEP_TIME>\n'
   L5='\t<LED_COLOR>'$LED_COLOR'</LED_COLOR>\n\t<LED_PULSE>'$PULSE'</LED_PULSE>\n'
@@ -105,7 +111,7 @@ if [ "$FORMAT" == "xml" ] || [ "$FORMAT" == "XML" ]; then
   DATA=$L0$L1$L2$L3$L4$L5$L6$L7$L8$L9$L10
 else
  L0='{'
- L1='"version":"'$VERSION'","ears_disabled":"'$ED'","sleep":"'$SLEEP'","sleep_time":"'$SLEEP_TIME'"'
+ L1='"version":"'$VERSION'","patch":"'$PATCH'","ears_disabled":"'$ED'","sleep":"'$SLEEP'","sleep_time":"'$SLEEP_TIME'"'
  L2=',"led_color":"'$LED_COLOR'","led_pulse":"'$PULSE'","tts_cache_size":"'$CS
  L3='","usb_free_space":"'$UFS'","karotz_free_space":"'$KFS'","eth_mac":"'$ETH_MAC'","wlan_mac":"'$WLAN_MAC'"'
  L4=',"nb_tags":"'$NT'"'

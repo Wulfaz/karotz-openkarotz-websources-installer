@@ -1,6 +1,6 @@
 <script>
 	$("#accapps").accordion({ active: false, collapsible: true,heightStyle: "content"});
-	
+
 	$("#btn_install_apps" ).button({
 		text: false,
 		icons: {
@@ -14,45 +14,45 @@
 		primary: "ui-icon-minus"
 		}
 	});
-	
-		$("#btn_refresh_apps" ).button({
+
+	$("#btn_refresh_apps" ).button({
 		text: false,
 		icons: {
 		primary: "ui-icon-arrowrefresh-1-w"
 		}
 	});
 
-	
+
 	// .ui-icon-trash
 	// btn_clear_apps
-	
+
 	$( "#btn_stories_play" ).button({
 		text: false,
 		icons: {
 		primary: "ui-icon-play"
 		}
 	});
-	
+
 	$( "#btn_stories_stop" ).button({
 		text: false,
 		icons: {
 		primary: "ui-icon-stop"
 		}
 	});
-	
+
 	$( "#btn_stories_pause" ).button({
 		text: false,
 		icons: {
 		primary: "ui-icon-pause"
 		}
 	});
-	
+
 	for ( i=0; i < 24; i++ )
 	{
 		$('#cbx_hour').append('<option value="'+i+'">'+i+'</option>');
-	}	
-	
-	$("#btn_install_apps").on('click', function () { 
+	}
+
+	$("#btn_install_apps").on('click', function () {
 		SendCommandApps ( $("#cbx_apps :selected").val(), "Installing : " +  CapitaliseFirstLetter($("#cbx_apps :selected").text())  + "..." );
 		});
 
@@ -60,31 +60,31 @@
 	{
 		CheckAppsInstallation( "apps.clock.install", "#funny_clock" );
 		CheckAppsInstallation( "apps.moods.install", "#moods" );
-//		CheckAppsInstallation( "apps.story.install", "#story" );
+		CheckAppsInstallation( "apps.story.install", "#story" );
  	});
 
 
-	$("#btn_clear_apps").on('click', function () { 
+	$("#btn_clear_apps").on('click', function () {
 		SendCommandApps ( $("#cbx_apps :selected").val() + "?clear=1", "Removing : " +  CapitaliseFirstLetter($("#cbx_apps :selected").text())  + "..." );
-		});	
-			
+		});
+
 	$( "#btn_random_moods").on('click', function ()
 	{
 		SendCommand ("apps/moods", "Playing random Moods ...");
  	});
-	
+
 	$( "#btn_moods").on('click', function ()
 	{
 		SendCommand ("apps/moods?id=" + $("#cbx_moods").val() , "Playing Moods #" + $("#cbx_moods").val() +"...");
  	});
-	
+
 	$( "#btn_stories_play").on('click', function ()
 	{
 		$.getJSON("/cgi-bin/sound?url=" + $("#cbx_stories").val(), function(data) {
-		});	
+		});
  	});
-	
-		$("#btn_stories_pause").on('click', function ()
+
+	$("#btn_stories_pause").on('click', function ()
 	{
 		SendCommand ("sound_control?cmd=pause", "Sending command ..." );
  	});
@@ -94,8 +94,8 @@
 	{
 		SendCommand ("sound_control?cmd=quit", "Sending command ...");
  	});
-	
-	
+
+
 	// Hour
 	$( "#btn_hours").on('click', function ()
 	{
@@ -106,18 +106,18 @@
 	{
 		SendCommand ("apps/clock", "Playing current hour announce" );
  	});
-		 
-    $("#tips_apps_clock1").on('click', function () 	{ $("#dlg_clipboard").data('tips', "/cgi-bin/apps/clock?hour=" + $("#cbx_hour").val()).dialog( "open" ); });		 
 
-    $("#tips_apps_clock2").on('click', function () 	{ $("#dlg_clipboard").data('tips', '/cgi-bin/apps/clock').dialog( "open" ); });		 
+    $("#tips_apps_clock1").on('click', function () 	{ $("#dlg_clipboard").data('tips', "/cgi-bin/apps/clock?hour=" + $("#cbx_hour").val()).dialog( "open" ); });
 
-    $("#tips_apps_moods1").on('click', function () 	{ $("#dlg_clipboard").data('tips', "/cgi-bin/apps/moods?id=" + $("#cbx_moods").val()).dialog( "open" ); });		 
+    $("#tips_apps_clock2").on('click', function () 	{ $("#dlg_clipboard").data('tips', '/cgi-bin/apps/clock').dialog( "open" ); });
 
-    $("#tips_apps_moods2").on('click', function () 	{ $("#dlg_clipboard").data('tips', '/cgi-bin/apps/moods').dialog( "open" ); });		 
+    $("#tips_apps_moods1").on('click', function () 	{ $("#dlg_clipboard").data('tips', "/cgi-bin/apps/moods?id=" + $("#cbx_moods").val()).dialog( "open" ); });
 
-    $("#tips_apps_story1").on('click', function () 	{ $("#dlg_clipboard").data('tips', "/cgi-bin/sound?url=" + $("#cbx_stories").val() ).dialog( "open" ); });		 
+    $("#tips_apps_moods2").on('click', function () 	{ $("#dlg_clipboard").data('tips', '/cgi-bin/apps/moods').dialog( "open" ); });
 
-		 
+    $("#tips_apps_story1").on('click', function () 	{ $("#dlg_clipboard").data('tips', "/cgi-bin/sound?url=" + $("#cbx_stories").val() ).dialog( "open" ); });
+
+
 </script>
 
 <div id="accapps">
@@ -130,14 +130,14 @@
          <button id="btn_clear_apps" title="Remove Application">Remove</button>
          <button id="btn_refresh_apps" title="Refresh Application">Refresh</button>
  		 </div>
-         <P>        
+         <P>
     </div>
-    
+
     <h3 id="moods" class="ui-state-disabled">Moods</h3>
     <div>
         <p>
         <label>Moods :
-         <select id="cbx_moods" style="width: 300px; overflow-x: scroll" >                                    
+         <select id="cbx_moods" style="width: 300px; overflow-x: scroll" >
         </select>                <BR><P>
          <button id="btn_moods">Play selected</button>
         <IMG SRC="/images/api.jpg" id="tips_apps_moods1" width=20 title="/cgi-bin/apps/moods ...">&nbsp;&nbsp;
@@ -150,15 +150,15 @@
     <div>
         <p>
         <label>Hours :
-        <select id="cbx_hour">                                    
+        <select id="cbx_hour">
         </select>                <BR><P>
         <button id="btn_hours">Play selected</button>
         <IMG SRC="/images/api.jpg" id="tips_apps_clock1" width=20 title="/cgi-bin/apps/clock ...">&nbsp;
         <button id="btn_current_hour">Play current</button>
-        <IMG SRC="/images/api.jpg" id= "tips_apps_clock2" width=20 title="/cgi-bin/apps/clock">&nbsp;        
+        <IMG SRC="/images/api.jpg" id= "tips_apps_clock2" width=20 title="/cgi-bin/apps/clock">&nbsp;
         <BR>
     </div>
-<!--    
+
     <h3 id="story" class="ui-state-disabled" >Story</h3>
     <div>
         <label>Stories :</label>
@@ -167,9 +167,8 @@
             <button id="btn_stories_play" title="Play story">play</button>
             <button id="btn_stories_pause" title="Pause/Resume story">pause</button>
             <button id="btn_stories_stop" title="Stop story">stop</button>
-        </div>&nbsp;<IMG SRC="/images/api.jpg" id="tips_apps_story1" width=20 title="/cgi-bin/apps/stories ... ">                    
+        </div>&nbsp;<IMG SRC="/images/api.jpg" id="tips_apps_story1" width=20 title="/cgi-bin/apps/stories ... ">
 		<P>
 	</div>
--->    
-    
+
 </div>

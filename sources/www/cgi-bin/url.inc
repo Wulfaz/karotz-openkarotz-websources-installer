@@ -1,3 +1,5 @@
+#!/bin/bash
+
 source /www/cgi-bin/url.vera
 source /www/cgi-bin/url.eedomus
 
@@ -5,7 +7,7 @@ declare -A URLParam
 
 CURL_BASE="curl -g --connect-timeout 30 -o /tmp/curlout -s -L -k"
 
-function ReadUrlParam {  
+function ReadUrlParam {
  saveIFS=$IFS
   IFS='=&'
   parm=($QUERY_STRING)
@@ -30,14 +32,14 @@ function BuildZibaseUrl {
    fi
 
   echo -n $ZURL
-} 
-  
-     
+}
+
+
 function BuildVeraUrl {
 #   IP=$1
 #   SCENE=$2
 #   URLONLY=3
-   
+
    VERAURL='http://'$1$VERA_BASE_URL$2
    Log "Building URL: $VERAURL"
    if [ "$3" != "1" ]; then
@@ -47,10 +49,10 @@ function BuildVeraUrl {
    fi
 
    echo -n $VERAURL
-}          
+}
 
 function BuildEeDomusUrl {
-# 
+#
 #   IP=$1
 #   MACRO=$2
 #   USER=$3
@@ -89,14 +91,14 @@ function BuildUrl {
 #PASSWORD=$4
 #URLONLY=$5
 
-   if [ "$2" != "" ]; then        	
+   if [ "$2" != "" ]; then
     LURL="$1?$2"
    else
     LURL=$1
    fi
-   
+
    if [ "$3" == "" ]; then
-     Log "Building URL: $LURL"   
+     Log "Building URL: $LURL"
    else
      Log "Building URL (Auth): $LURL ($3:$4)"
    fi
@@ -115,7 +117,7 @@ function BuildUrl {
 }
 
 
-function GetUrl { 
+function GetUrl {
 #URL=$1
 #USER=$2
 #PASS=$3
@@ -130,11 +132,11 @@ function GetUrl {
     URL=$UTEMP
  fi
  Log  "Calling URL :" "$URL"
- eval $URL  
+ eval $URL
 
 echo $?
 
-}  
+}
 
 
 

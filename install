@@ -1,4 +1,5 @@
 #!/bin/bash
+
 CURRDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source ${CURRDIR}/setup.inc
 
