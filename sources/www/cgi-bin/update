@@ -1,65 +1,10 @@
 #!/bin/bash
 
 source /usr/www/cgi-bin/setup.inc
-
-function ReadUrlParam 
-{  
- saveIFS=$IFS
-  IFS='=&'
-  parm=($QUERY_STRING)
-  IFS=$saveIFS
-  for ((i=0; i<${#parm[@]}; i+=2))
-  do
-      URLParam[${parm[i]}]=${parm[i+1]}
-  done
-}
-
-function Download {
-URL=$1
-RDIR=$2
-LDIR=$3
-NAME=$4
-GROUP=$5
-NL=$6
-
-echo "----------------------------------------"
-echo "Updating : "$NAME
-wget $URL$RDIR/list.txt -O $LDIR/list.txt -q
-nbline=$(cat $LDIR/list.txt | wc -l )
-echo $nbline" File(s) to download"
-echo "----------------------------------------"
-i=1
-while read line;
-do
-    n=$((i%$GROUP))
-    if [ $n -eq 0 ]; then
-       echo -n "."
-    fi
-    wget $URL$RDIR/$line -q -O $LDIR/$line
-    chmod 777 $LDIR/$line
-    i=$((i+1))
-done < $LDIR/list.txt
-rm -f $LDIR/list.txt >>/dev/null 2>>/dev/null
-echo ""
-}
-
-
-
-BLACK=000000
-BLUE=0000FF
-CYAN=00FF9F
-GREEN=00FF00
-ORANGE=FFA500
-PINK=FFCFAF
-PURPLE=9F00FF
-RED=FF0000
-VIOLET=660099
-WHITE=4FFF68
-YELLOW=75FF00
+source /usr/www/cgi-bin/url.inc
+source /usr/www/cgi-bin/utils.inc
 
 TDIR="/usr/www"
-UDIR="$CNF_DATADIR"
-SURL="http://karotz.filippi.org"
 
 ReadUrlParam
 
@@ -85,7 +30,7 @@ fi
 # Checking cgi-bin
 if [ ! -d $TDIR/cgi-bin ]; then
    mkdir $TDIR/cgi-bin >>/dev/null 2>>/dev/null
-fi   
+fi
 
 # Checking images
 if [ ! -d $TDIR/images ]; then
@@ -117,7 +62,7 @@ fi
 # Get server Version
 rm $TDIR/server.ok.version >>/dev/null 2>>/dev/null
 echo "----------------------------------------"
-wget $SURL/ok.version -q -O $TDIR/server.ok.version 
+wget $CNF_ROOT_URL/ok.version -q -O $TDIR/server.ok.version
 RV=$(cat $TDIR/server.ok.version )
 
 # Display version
@@ -135,14 +80,14 @@ else
     rm -f $TDIR/ok.version >>/dev/null 2>>/dev/null
     mv $TDIR/server.ok.version $TDIR/ok.version >>/dev/null 2>>/dev/null
     echo "Web Root  : "$TDIR
-    echo "Data Root : "$UDIR 
-    
+    echo "Data Root : "$CNF_DATADIR
+
     # Get Web Server Config File
     echo "----------------------------------------"
     echo "Updating Web Server Config"
     echo "----------------------------------------"
-    wget $SURL/httpd.conf -O /usr/httpd.conf -q > /dev/null
-     
+    wget $CNF_ROOT_URL/httpd.conf -O /usr/httpd.conf -q > /dev/null
+
 	echo "----------------------------------------"
 	echo "Updating startup Script"
 	echo "----------------------------------------"
@@ -157,108 +102,108 @@ else
 		 echo "# ----------------------------------------" >> /usr/yaffs_start.sh
 		 echo "" >> /usr/yaffs_start.sh
      fi
-        
+
     # Updating /www
     #URL=$1
     #RDIR=$2
     #LDIR=$3
     #NAME=$4
     #GROUP=$5
-    Download $SURL /www /usr/www "Pages Web" 1 
-    
+    Download $CNF_ROOT_URL /www /usr/www "Pages Web" 1
+
     # Updating /www/cgi-bin
-    Download $SURL /www/cgi-bin /usr/www/cgi-bin "Scripts" 5
-    
+    Download $CNF_ROOT_URL /www/cgi-bin /usr/www/cgi-bin "Scripts" 5
+
     # Updating Images
-    Download $SURL /www/images /usr/www/images "Images" 1
-    
+    Download $CNF_ROOT_URL /www/images /usr/www/images "Images" 1
+
     echo "----------------------------------------"
     echo Checking Data Structure
     echo "----------------------------------------"
-    
+
 	# Updating Data Path
 	#
-	if [ "$UU" == "1" ] || [ "$2" == "1" ]; then 
-    
-        if [ ! -d "$UDIR/Stories" ]; then
-            mkdir $UDIR/Stories >>/dev/null 2>>/dev/null
+	if [ "$UU" == "1" ] || [ "$2" == "1" ]; then
+
+        if [ ! -d "$CNF_DATADIR/Stories" ]; then
+            mkdir $CNF_DATADIR/Stories >>/dev/null 2>>/dev/null
             echo -n "."
         else
             echo -n "o"
         fi
-    
-        if [ ! -d "$UDIR/Moods" ]; then
-           	mkdir $UDIR/Moods >>/dev/null 2>>/dev/null
+
+        if [ ! -d "$CNF_DATADIR/Moods" ]; then
+           	mkdir $CNF_DATADIR/Moods >>/dev/null 2>>/dev/null
 			echo -n "."
         else
            echo -n "o"
         fi
-    
-        if [ ! -d "$UDIR/Moods/fr" ]; then
-           	mkdir $UDIR/Moods/fr >>/dev/null 2>>/dev/null
+
+        if [ ! -d "$CNF_DATADIR/Moods/fr" ]; then
+           	mkdir $CNF_DATADIR/Moods/fr >>/dev/null 2>>/dev/null
 			echo -n "."
         else
            echo -n "o"
         fi
-    
-        if [ ! -d "$UDIR/Run" ]; then
-           mkdir $UDIR/Run >>/dev/null 2>>/dev/null
+
+        if [ ! -d "$CNF_DATADIR/Run" ]; then
+           mkdir $CNF_DATADIR/Run >>/dev/null 2>>/dev/null
            echo -n "."
         else
            echo -n "o"
         fi
-    
-        if [ ! -d "$UDIR/Rfid" ]; then
-        	mkdir $UDIR/Rfid >>/dev/null 2>>/dev/null
+
+        if [ ! -d "$CNF_DATADIR/Rfid" ]; then
+        	mkdir $CNF_DATADIR/Rfid >>/dev/null 2>>/dev/null
             echo -n "."
         else
            	echo -n "o"
         fi
-    
-        if [ ! -d "$UDIR/Sounds" ]; then
-           mkdir $UDIR/Sounds >>/dev/null 2>>/dev/null
+
+        if [ ! -d "$CNF_DATADIR/Sounds" ]; then
+           mkdir $CNF_DATADIR/Sounds >>/dev/null 2>>/dev/null
            echo -n "."
         else
            echo -n "o"
         fi
-    
-         if [ ! -d "$UDIR/Tmp" ]; then
-           mkdir $UDIR/Tmp >>/dev/null 2>>/dev/null
+
+         if [ ! -d "$CNF_DATADIR/Tmp" ]; then
+           mkdir $CNF_DATADIR/Tmp >>/dev/null 2>>/dev/null
            echo -n "."
         else
            echo -n "o"
         fi
-    
-        if [ ! -d "$UDIR/Voice" ]; then
-           mkdir $UDIR/Voice >>/dev/null 2>>/dev/null
+
+        if [ ! -d "$CNF_DATADIR/Voice" ]; then
+           mkdir $CNF_DATADIR/Voice >>/dev/null 2>>/dev/null
            echo -n "."
         else
            echo -n "o"
         fi
-    
-        if [ ! -d "$UDIR/Rfid" ]; then
-           	mkdir $UDIR/Rfid >>/dev/null 2>>/dev/null
+
+        if [ ! -d "$CNF_DATADIR/Rfid" ]; then
+           	mkdir $CNF_DATADIR/Rfid >>/dev/null 2>>/dev/null
 			echo -n "."
         else
            	echo -n "o"
         fi
         echo ""
-          
-  	# Updating Voices  
-        Download $SURL /usbkey/Voice $UDIR/Voice "Voices" 1
-        
+
+  		# Updating Voices
+        Download $CNF_ROOT_URL /usbkey/Voice $CNF_DATADIR/Voice "Voices" 1
+
         # Updating Sounds
-        Download $SURL /usbkey/Sounds $UDIR/Sounds "Sounds" 1
-        
+        Download $CNF_ROOT_URL /usbkey/Sounds $CNF_DATADIR/Sounds "Sounds" 1
+
     fi
 fi
 echo "----------------------------------------"
 echo  Done
-echo  You Must now manually update Moods and Stories
+echo  You must now manually update Moods and Stories
 echo  from Update Tab
 echo "----------------------------------------"
-echo "Power Cycle your Rabbit to finish Instllation."
-/usr/bin/madplay $UDIR/Voice/install_ok.mp3 >>/dev/null 2>>/dev/null
+echo "Power Cycle your Rabbit to finish Installation."
+/usr/bin/madplay $CNF_DATADIR/Voice/install_ok.mp3 >>/dev/null 2>>/dev/null
 echo "----------------------------------------"
 
 

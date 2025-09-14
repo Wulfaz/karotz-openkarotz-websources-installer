@@ -43,7 +43,7 @@ if [ "$CIF" == "1" ]; then
   SendResponse "$TG"
   exit 0
 fi
-                  
+
 
 # Checking root Web
 if [ ! -d $TDIR ]; then
@@ -59,7 +59,7 @@ fi
 if [ ! -d $CNF_DATADIR/Tmp ]; then
    mkdir $CNF_DATADIR/Tmp >>/dev/null 2>>/dev/null
 fi
-   
+
 # Checking Run
 if [ ! -d $CNF_DATADIR/Run ]; then
    mkdir $CNF_DATADIR/Run >>/dev/null 2>>/dev/null
@@ -67,17 +67,17 @@ fi
 
 # Checking Apps
 if [ ! -d $CNF_DATADIR/Apps ]; then
-  mkdir $CNF_DATADIR/Apps >>/dev/null 2>>/dev/null
+   mkdir $CNF_DATADIR/Apps >>/dev/null 2>>/dev/null
 fi
-         
+
 if [ ! -d $CNF_DATADIR/Apps/Clock ]; then
    mkdir $CNF_DATADIR/Apps/Clock >>/dev/null 2>>/dev/null
 fi
- 
+
 if [ ! -d $CNF_DATADIR/Apps/Clock/Data ]; then
    mkdir $CNF_DATADIR/Apps/Clock/Data >>/dev/null 2>>/dev/null
-fi  
-      
+fi
+
 # Get local version
 if [ ! -f $CNF_DATADIR/Apps/Clock/apps.installed ]; then
    I=-1
@@ -97,7 +97,7 @@ else
     Log "Apps Clock" "Downloading $SURL/clock.zip"
     wget $SURL/clock.zip -O /tmp/clock.zip -q >>/dev/null 2>>/dev/null
     if [ -e "/tmp/clock.zip" ]; then
-       Log "Apps Clock" "Installing"
+      Log "Apps Clock" "Installing"
       unzip  -q -o /tmp/clock.zip  -d $CNF_DATADIR/Apps/Clock/Data
       rm -f /tmp/clock.zip >>/dev/null 2>>/dev/null
       Log "Apps Clock" "Checking permissions"
@@ -105,17 +105,17 @@ else
     else
       Log "Apps Clock" "Unable to download file $SURL/clock.zip" 1
       TG='{"return":"1","msg":"Error during installation"}'
-      SendResponse "$TG"     
+      SendResponse "$TG"
       exit 0
-    fi 
+    fi
   # Update install flag
   echo "1" > $CNF_DATADIR/Apps/Clock/apps.installed
 fi
 
-Log "Apps Clock"  "Clock Apps Installed" 
+Log "Apps Clock"  "Clock Apps Installed"
 
 TG='{"return":"0"}'
 SendResponse "$TG"
-           
+
 # ########/usr/bin/madplay $UDIR/Voice/install_ok.mp3 >>/dev/null 2>>/dev/null
-      
+

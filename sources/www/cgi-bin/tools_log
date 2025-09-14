@@ -1,11 +1,7 @@
 #!/bin/bash
 
 source /www/cgi-bin/setup.inc
-source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
-
-URL="http://karotz.filippi.org"
-ReadUrlParam
 
 VL=""
 if [ -e "/var/log/messages" ]; then

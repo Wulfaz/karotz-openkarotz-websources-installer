@@ -22,8 +22,15 @@ CNF_BREEZE_COLOR=00FF00
 # F : Female
 CNF_GENDER=F
 
+# Version
+CNF_VERSION="210"
+
+# Root URL
+CNF_ROOT_URL="http://karotz.filippi.org"
+
 # Base URL
-CNF_BASE_URL="http://karotz.filippi.org/2.0"
+CNF_BASE_URL="$CNF_ROOT_URL/$CNF_VERSION"
+
 SOURCES_CNF="$CURRDIR/sources/openkarotz"
 SOURCES_TDIR="$CURRDIR/sources/www"
 

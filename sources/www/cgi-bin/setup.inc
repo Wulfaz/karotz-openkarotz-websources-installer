@@ -1,7 +1,6 @@
 #
 # Global paramters
 #
-
 # Max Files in cache
 CNF_MAX_CACHE_SIZE=100
 

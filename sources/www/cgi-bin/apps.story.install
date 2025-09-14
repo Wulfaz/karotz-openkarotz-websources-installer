@@ -43,7 +43,7 @@ if [ "$CIF" == "1" ]; then
   SendResponse "$TG"
   exit 0
 fi
-                  
+
 
 # Checking root Web
 if [ ! -d $TDIR ]; then
@@ -59,7 +59,7 @@ fi
 if [ ! -d $CNF_DATADIR/Tmp ]; then
    mkdir $CNF_DATADIR/Tmp >>/dev/null 2>>/dev/null
 fi
-   
+
 # Checking Run
 if [ ! -d $CNF_DATADIR/Run ]; then
    mkdir $CNF_DATADIR/Run >>/dev/null 2>>/dev/null
@@ -67,13 +67,17 @@ fi
 
 # Checking Apps
 if [ ! -d $CNF_DATADIR/Apps ]; then
-  mkdir $CNF_DATADIR/Apps >>/dev/null 2>>/dev/null
+   mkdir $CNF_DATADIR/Apps >>/dev/null 2>>/dev/null
 fi
-         
+
 if [ ! -d $CNF_DATADIR/Apps/Story ]; then
    mkdir $CNF_DATADIR/Apps/Story >>/dev/null 2>>/dev/null
 fi
- 
+
+if [ ! -d $CNF_DATADIR/Stories ]; then
+   mkdir $CNF_DATADIR/Stories >>/dev/null 2>>/dev/null
+fi
+
 # Get local version
 if [ ! -f $CNF_DATADIR/Apps/Story/apps.installed ]; then
    I=-1
@@ -90,14 +94,28 @@ if [ "$I" -ge "0" ] ; then
    exit 0
 else
     Log "Apps Story" "Starting Installation"
+    Log "Apps Story" "Downloading $SURL/story.zip"
+    wget $SURL/stories.zip -O /tmp/stories.zip -q >>/dev/null 2>>/dev/null
+    if [ -e "/tmp/stories.zip" ]; then
+      Log "Apps Story" "Installing"
+      unzip  -q -o /tmp/stories.zip  -d $CNF_DATADIR/Stories
+      rm -f /tmp/stories.zip >>/dev/null 2>>/dev/null
+      Log "Apps Story" "Checking permissions"
+      chmod -R 444 $CNF_DATADIR/Stories
+    else
+      Log "Apps Story" "Unable to download file $SURL/story.zip" 1
+      TG='{"return":"1","msg":"Error during installation"}'
+      SendResponse "$TG"
+      exit 0
+    fi
   # Update install flag
   echo "1" > $CNF_DATADIR/Apps/Story/apps.installed
 fi
 
-Log "Apps"  "Story Apps Installed" 
+Log "Apps"  "Story Apps Installed"
 
 TG='{"return":"0"}'
 SendResponse "$TG"
-           
+
 # ########/usr/bin/madplay $UDIR/Voice/install_ok.mp3 >>/dev/null 2>>/dev/null
-      
+
