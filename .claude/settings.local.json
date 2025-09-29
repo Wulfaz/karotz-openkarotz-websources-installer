@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git checkout:*)",
+      "Bash(find:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(git stash:*)",
+      "Bash(git cherry-pick:*)",
+      "Bash(git reset:*)",
+      "Bash(git fetch:*)",
+      "Bash(git revert:*)",
+      "Bash(git rebase:*)",
+      "Bash(git commit:*)",
+      "Bash(chmod:*)",
+      "Bash(./format_files.sh)",
+      "Bash(npm update:*)",
+      "Bash(brew install:*)",
+      "Bash(shellcheck:*)",
+      "Bash(shfmt:*)",
+      "Bash(open:*)",
+      "Bash(npm install:*)",
+      "Bash(bash-language-server --version)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

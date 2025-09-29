@@ -5,10 +5,7 @@ source /www/cgi-bin/utils.inc
 
 VL=""
 if [ -e "/var/log/messages" ]; then
-  tail -q -n 200 /var/log/messages > /tmp/messages.txt
-  VL=`awk '{printf "%s\n\r", $0}' /tmp/messages.txt`
-  rm -f /tmp/messages.txt
+    Log "[Tools]" "Retrieve last log messages"
+    VL=$(tail -q -n 200 /var/log/messages | awk '{printf "%s\r\n, $0}')
 fi
-
-SendResponse "$VL"
-
+SendResponse "${VL}"

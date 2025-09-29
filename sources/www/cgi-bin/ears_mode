@@ -1,19 +1,21 @@
 #!/bin/bash
 
-source /usr/www/cgi-bin/setup.inc
-source /usr/www/cgi-bin/url.inc
-source /usr/www/cgi-bin/ears.inc
-source /usr/www/cgi-bin/utils.inc
+source /www/cgi-bin/setup.inc
+source /www/cgi-bin/url.inc
+source /www/cgi-bin/utils.inc
+source /www/cgi-bin/ears.inc
 
-ReadUrlParam
+ReadUrlParams
+D=${URLParam[disable]:-0}
 
-D=${URLParam[disable]}
-if [ "$D" == "1" ]; then
-	echo "1" > $CNF_DATADIR/Run/ears.disabled >>/dev/null 2>>/dev/null
+if [ ${D} -eq 1 ]; then
+	echo "1" >${CNF_DATADIR}/Run/ears.disabled
+	Log "[Ears]" "Ears disabled"
 	DATA='{"return":"0","disabled":"1"}'
 else
-	rm -f $CNF_DATADIR/Run/ears.disabled >>/dev/null 2>>/dev/null
+	rm -f ${CNF_DATADIR}/Run/ears.disabled &>/dev/null
 	EarsReset
-        DATA='{"return":"0","disabled":"0"}'
+	Log "[Ears]" "Ears enabled"
+	DATA='{"return":"0","disabled":"0"}'
 fi
-SendResponse "$DATA"
+SendResponse "${DATA}"

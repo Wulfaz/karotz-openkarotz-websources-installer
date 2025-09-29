@@ -1,19 +1,17 @@
 #!/bin/bash
 
-source /usr/www/cgi-bin/setup.inc
-source /usr/www/cgi-bin/leds.inc
-source /usr/www/cgi-bin/utils.inc
+source /www/cgi-bin/setup.inc
+source /www/cgi-bin/utils.inc
 
-printf -v UTEMP '%s/apps.json' $CNF_BASE_URL
-Log "[UPDATE][PATCH]"  "Downloading Update List $UTEMP"
-rm /tmp/patch.json >>/dev/null 2>>/dev/null
-curl --connect-timeout 30 -s -L -k -o /tmp/patch.json $UTEMP
-
-  if [ ! -e "/tmp/patch.json" ]; then
-    Log "[UPDATE][PATCH]"  "Unable read Update List" 1
-    DATA='"{return":"0","msg":"Unable to read update list"}'
-  else
-    DATA=$(cat /tmp/patch.json) 
-  fi
-
-SendResponse "$DATA"
+printf -v UTEMP '%s/apps.json' ${CNF_BASE_URL}
+Log "[Update][Apps]" "Downloading app list ${UTEMP}"
+rm /tmp/apps.json &>/dev/null
+curl --connect-timeout 30 -s -L -k -o /tmp/apps.json ${UTEMP}
+if [ ! -e "/tmp/apps.json" ]; then
+	Log "[Update][Apps]" "Unable read app list" 1
+	DATA='"{return":"1","msg":"Unable to read app list."}'
+else
+	Log "[Update][Apps]" "Retrieve app list"
+	DATA=$(cat /tmp/apps.json)
+fi
+SendResponse "${DATA}"

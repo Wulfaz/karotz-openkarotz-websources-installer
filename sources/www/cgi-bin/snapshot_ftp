@@ -4,55 +4,41 @@ source /www/cgi-bin/setup.inc
 source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
 source /www/cgi-bin/leds.inc
-source /www/cgi-bin/ears.inc
 source /www/cgi-bin/webcam.inc
 
-KillProcess
-
-ReadUrlParam
-TDIR="/www/snapshots/"
-
-            
-SILENT=${URLParam[silent]}
+ReadUrlParams
+SILENT=${URLParam[silent]:-0}
 SERVER=${URLParam[server]}
 FTP_USER=${URLParam[user]}
 FTP_PASS=${URLParam[password]}
+FTP_PORT=${URLParam[port]:-21}
 FTP_DIR=${URLParam[remote_dir]}
+CheckMandatoryParameter "${SERVER}" server
+CheckMandatoryParameter "${FTP_USER}" user
+CheckMandatoryParameter "${FTP_PASS}" password
+CheckMandatoryParameter "${FTP_DIR}" remote_dir
 
-CheckMandatoryParameter "$SERVER" server
-CheckMandatoryParameter "$FTP_USER" user
-CheckMandatoryParameter "$FTP_PASS" password
-CheckMandatoryParameter "$FTP_DIR" remote_dir
+FN="snapshot_$(date +'%Y_%m_%d_%H_%M_%S')"
 
-FN="snapshot"_`date +'%Y_%m_%d_%H_%M_%S'`
+KillProcess
 
 TakeSnapshot
-
-if [ ! -e "$CNF_DATADIR/Run/karotz.sleep" ]; then
-  LedsRestore
-  if [ "$SILENT" == "" ]; then
-    PlaySound /usr/karotz/res/sounds/webcam.mp3
-  fi
+if [ ! -e "${CNF_DATADIR}/Run/karotz.sleep" ]; then
+    LedsRestore
+    if [ ${SILENT} -eq 0 ]; then
+        PlaySound /usr/karotz/res/sounds/webcam.mp3
+    fi
 fi
-  
 if [ ! -e "/tmp/picture.jpg" ]; then
-      Log  "Snapshot" "Unable to take snapshot" 1
-      DATA='{"return":"1","msg":"Unable to take snapshot."}'
-      SendResponse "$DATA"
-      exit 0
-fi
-
-ftpput -u $FTP_USER -p $FTP_PASS $SERVER $FTP_DIR/$FN.jpg /tmp/picture.jpg 2> /tmp/ftperror
-if [ $? -eq 0 ]; then
-  DATA='{"filename":"'$FN'.jpg","return":"0"}'
+    Log "[Snapshot]" "Unable to take snapshot" 1
+    DATA='{"return":"1","msg":"Unable to take snapshot."}'
 else
-  ERR=`cat /tmp/ftperror`
-  DATA='{"message":"'$ERR'","return":"0"}'
-  Log  "Snapshot" "Unable to upload file to server" 1
+    if busybox ftpput -u ${FTP_USER} -p ${FTP_PASS} -P ${FTP_PORT} ${SERVER} ${FTP_DIR}/${FN}.jpg /tmp/picture.jpg 2>/tmp/ftperror; then
+        Log "[Snapshot]" "Snapshot uploaded"
+        DATA='{"return":"0","filename":"'${FN}'.jpg"}'
+    else
+        Log "[Snapshot]" "Unable to upload file to server" 1
+        DATA='{"return":"1","msg":"'$(cat /tmp/ftperror)'"}'
+    fi
 fi
-
-SendResponse "$DATA"
-
-
-
-
+SendResponse "${DATA}"

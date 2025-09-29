@@ -1,19 +1,17 @@
 #!/bin/bash
 
-source /usr/www/cgi-bin/setup.inc
-source /usr/www/cgi-bin/leds.inc
-source /usr/www/cgi-bin/utils.inc
+source /www/cgi-bin/setup.inc
+source /www/cgi-bin/utils.inc
 
-printf -v UTEMP '%s/Update' $CNF_ROOT_URL
-Log "[UPDATE][PATCH]"  "Downloading Update List $UTEMP"
-rm /tmp/patch.json >>/dev/null 2>>/dev/null
-curl --connect-timeout 30 -s -L -k -o /tmp/patch.json $UTEMP
-
-  if [ ! -e "/tmp/patch.json" ]; then
-    Log "[UPDATE][PATCH]"  "Unable read Update List" 1
-    DATA='"{return":"0","msg":"Unable to read update list"}'
-  else
-    DATA=$(cat /tmp/patch.json) 
-  fi
-
-SendResponse "$DATA"
+printf -v UTEMP '%s/Update' ${CNF_ROOT_URL}
+Log "[Update][Update]" "Downloading update list ${UTEMP}"
+rm /tmp/update.json &>/dev/null
+curl --connect-timeout 30 -s -L -k -o /tmp/update.json ${UTEMP}
+if [ ! -e "/tmp/update.json" ]; then
+	Log "[Update][Update]" "Unable read update list" 1
+	DATA='"{return":"1","msg":"Unable to read update list"}'
+else
+	Log "[Update][Update]" "Retrieve update list"
+	DATA=$(cat /tmp/update.json)
+fi
+SendResponse "${DATA}"

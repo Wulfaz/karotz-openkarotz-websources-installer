@@ -1,0 +1,9 @@
+# shfmt configuration for OpenKarotz project
+# Indent with tabs (eq 4 spaces)
+-i 0
+# Case statement indentation
+-ci
+# Simplify the code
+-s
+# Redirect operators will be followed by a space
+-sr

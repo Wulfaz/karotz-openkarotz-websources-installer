@@ -1,0 +1,17 @@
+# ShellCheck configuration for OpenKarotz project
+
+# Enable checking of sourced files
+external-sources=true
+
+# Disable specific checks that are common in CGI scripts
+disable=SC1091  # Not following sourced files (we use many .inc files)
+disable=SC2034  # Unused variables (CGI scripts often have URL parameters)
+disable=SC2154  # Referenced but not assigned (sourced from .inc files)
+disable=SC2086  # Double quote to prevent globbing (sometimes needed for CGI)
+disable=SC1117  # Backslash is literal in \n (for echo formatting)
+
+# Enable additional checks
+enable=add-default-case
+enable=avoid-nullary-conditions
+enable=check-unassigned-uppercase
+enable=require-variable-braces

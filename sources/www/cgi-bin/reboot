@@ -1,15 +1,13 @@
 #!/bin/bash
 
 source /www/cgi-bin/setup.inc
-source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
-source /www/cgi-bin/leds.inc
-source /www/cgi-bin/ears.inc
+#source /www/cgi-bin/leds.inc
 
 KillProcess
-#Leds FF0000 
+#Leds ${RED}
 
 /sbin/reboot -d 10 &
+Log "[System]" "Reboot"
 DATA='{"return":"0"}'
-
-SendResponse "$DATA"
+SendResponse "${DATA}"

@@ -1,4 +1,4 @@
-{ "streams": [ 
+{ "return":"0", "streams": [
 {"id":1,"name":"Rire & Chanson","url":"http://mp3.live.tv-radio.com/rire_et_chansons/all/rir_124629.mp3"},
 {"id":2,"name":"RTL","url":"http://streaming.radio.rtl.fr/rtl-1-44-96"},
 {"id":3,"name":"RMC","url":"http://vipicecast.yacast.net/rmc"},
@@ -14,5 +14,4 @@
 {"id":13,"name":"Nostalgie","url":"http://mp3.live.tv-radio.com/nostalgie/all/nos_113812.mp3"},
 {"id":14,"name":"TSF Jazz","url":"http://broadcast.infomaniak.net:80/tsfjazz-high.mp3"},
 {"id":15,"name":"Sud Radio","url":"http://broadcast.infomaniak.net:80/start-sud-high.mp3"}
-], "return":"0" }
-
+] }

@@ -1,42 +1,34 @@
 #!/bin/bash
 
-source /usr/www/cgi-bin/utils.inc
-source /usr/www/cgi-bin/url.inc
-source /usr/www/cgi-bin/setup.inc
+source /www/cgi-bin/utils.inc
+source /www/cgi-bin/url.inc
+source /www/cgi-bin/setup.inc
 
-TDIR="/usr/www"
-UDIR="$CNF_DATADIR"
-URL="$CNF_BASE_URL"
-
-ReadUrlParam
-
+ReadUrlParams
 ID=${URLParam[id]}
 FILE=${URLParam[file]}
-
-CheckMandatoryParameter "$ID" id
-CheckMandatoryParameter "$FILE" file
+CheckMandatoryParameter "${ID}" id
+CheckMandatoryParameter "${FILE}" file
 
 # Get update file from server
-wget $URL/update/$ID/$FILE -O /tmp/$FILE -q >> /dev/null 2>> /dev/null
+wget ${CNF_BASE_URL}/update/${ID}/${FILE} -O /tmp/${FILE} -q &>/dev/null
 
 # Check file
-if [ ! -e "/tmp/$FILE" ]; then
-  Log "[Update]" "Unable to get file : $URL/update/$ID/$FILE" 1
-  DATA='{"return":"1","msg":"Unable to read file"}'
-  SendResponse "$DATA"
-  exit 0
+if [ ! -e "/tmp/${FILE}" ]; then
+	Log "[Update]" "Unable to get file: ${CNF_BASE_URL}/update/${ID}/${FILE}" 1
+	DATA='{"return":"1","msg":"Unable to read file."}'
 else
-  Log "[Update]" "Reading file : $URL/update/$ID/$FILE"
-  chmod 777 /tmp/$FILE >> /dev/null 2>> /dev/null
+	Log "[Update]" "Reading file: ${CNF_BASE_URL}/update/${ID}/${FILE}"
+	chmod 755 /tmp/${FILE} &>/dev/null
+
+	# Launch update file
+	Log "[Update]" "Starting update"
+	bash /tmp/${FILE} &>/dev/null
+
+	# Remove update file
+	rm -f /tmp/${FILE} &>/dev/null
+
+	Log "[Update]" "Update successful"
 fi
-
-# Launch update file
-Log "[Update]" "Starting update"
-bash /tmp/$FILE >> /dev/null 2>> /dev/null
-
-# Remove update file
-rm -f /tmp/$FILE >> /dev/null 2>> /dev/null
-
-
 DATA='{"return":"0"}'
-SendResponse "$DATA"
+SendResponse "${DATA}"

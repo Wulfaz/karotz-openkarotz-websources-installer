@@ -1,88 +1,59 @@
 #!/bin/bash
 
-CURRDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+CURRDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" #TODO BASH_SOURCE[0]?
 source ${CURRDIR}/setup.inc
 
 function Log {
- #TAG=$1
- #MSG=$2
- #ERR=$3
-
-  if [ "$3" == "1" ]; then
-    logger -s "[OpenKarotz] [ERROR]" "$1 $2" >> /dev/null 2>> /dev/null
-  else
-    logger -s "[OpenKarotz]" "$1 $2" >> /dev/null 2>> /dev/null
-  fi
+	#  TAG=$1
+	#  MSG=$2
+	#  ERR=$3
+	if [ $3 -eq 1 ]; then
+		logger -s "[OpenKarotz] [ERROR]" "$1 $2" &>/dev/null
+	else
+		logger "[OpenKarotz]" "$1 $2" &>/dev/null
+	fi
 }
 
-function dbus_led_pulse {
-    UUID=`cat /proc/sys/kernel/random/uuid`
-    dbus-send --system --dest=com.mindscape.karotz.Led                                  \
-            /com/mindscape/karotz/Led com.mindscape.karotz.KarotzInterface.pulse    \
-            string:"$UUID" string:"$1" string:"$2" int32:700 int32:-1
-}
-
-BLACK=000000
-BLUE=0000FF
-CYAN=00FF9F
-GREEN=00FF00
-ORANGE=FFA500
-PINK=FFCFAF
-PURPLE=9F00FF
-RED=FF0000
-VIOLET=660099
-WHITE=4FFF68
-YELLOW=75FF00
-
-
-if [ ! -d $SOURCES_CNF ]; then
-   Log  "[INSTALL]"  "$SOURCES_CNF NOT FOUND"
-   exit 1
+if [ ! -d ${SOURCES_CNF} ]; then
+	Log "[Install]" "${SOURCES_CNF} not found." 1
+	exit 1
 fi
-
-if [ ! -d $SOURCES_TDIR ]; then
-   Log  "[INSTALL]"  "$SOURCES_TDIR NOT FOUND"
-   exit 1
+if [ ! -d ${SOURCES_TDIR} ]; then
+	Log "[Install]" "${SOURCES_TDIR} not found." 1
+	exit 1
 fi
-
 echo "SOURCES_TDIR: ${SOURCES_TDIR}"
 echo "SOURCES_CNF: ${SOURCES_CNF}"
 
-Log  "[INSTALL]"  "CleanUP"
-if [ -d $TDIR ]; then
-   Log  "[INSTALL]"  "Removing directory:$TDIR"
-   rm -fr $TDIR >>/dev/null 2>>/dev/null
-   Log  "[INSTALL]"  "Result:$?"
+Log "[Install]" "CleanUP"
+if [ -d ${TDIR} ]; then
+	Log "[Install]" "Removing directory: ${TDIR}"
+	rm -fr ${TDIR} &>/dev/null
+	Log "[Install]" "Result: $?"
+fi
+if [ ! -d ${CNF_DATADIR} ]; then
+	Log "[Install]" "Creating Empty Dir: ${CNF_DATADIR}"
+	mkdir -p ${CNF_DATADIR}
+	Log "[Install]" "Result: $?"
 fi
 
-if [ ! -d $CNF_DATADIR ]; then
-   Log  "[INSTALL]"  "Creating Empty Dir: $CNF_DATADIR"
-   mkdir -p $CNF_DATADIR
-   Log  "[INSTALL]"  "Result:$?"
-fi
-
-
-Log  "[INSTALL]"  "Copy"
-Log  "[INSTALL]"  "Creating directory:$CNF_DATADIR"
-cp -fR ${SOURCES_CNF}/* ${CNF_DATADIR}/ >>/dev/null 2>>/dev/null
-Log  "[INSTALL]"  "Result:$?"
-
-Log  "[INSTALL]"  "Creating directory:$TDIR"
-cp -fR ${SOURCES_TDIR}/ ${TDIR}/ >>/dev/null 2>>/dev/null
-Log  "[INSTALL]"  "Result:$?"
-
-
-Log  "[INSTALL]"  "Creating Links"
-ln -s $CNF_DATADIR/Snapshots $TDIR/snapshots  >>/dev/null 2>>/dev/null
-ln -s $CNF_DATADIR/Tmp $TDIR/tts_cache >>/dev/null 2>>/dev/null
-
-Log  "[INSTALL]"  "Managing Rights"
-chmod -R 755 $TDIR
+Log "[Install]" "Copy"
+Log "[Install]" "Creating directory: ${CNF_DATADIR}"
+cp -fR ${SOURCES_CNF}/* ${CNF_DATADIR}/ &>/dev/null
+Log "[Install]" "Result: $?"
+Log "[Install]" "Creating directory: ${TDIR}"
+cp -fR ${SOURCES_TDIR}/ ${TDIR}/ &>/dev/null
+Log "[Install]" "Result: $?"
+Log "[Install]" "Creating Links"
+ln -s ${CNF_DATADIR}/Snapshots ${TDIR}/snapshots &>/dev/null
+ln -s ${CNF_DATADIR}/Tmp ${TDIR}/tts_cache &>/dev/null
+Log "[Install]" "Managing Rights"
+chmod -R 755 ${TDIR}
 
 echo "----------------------------------------"
-echo  Done
-echo   You Must now manually Download Apps
-echo   from Update Tab
+echo Done
+echo You must now manually Download Apps
+echo from Update Tab
 echo "----------------------------------------"
 
-Log  "[INSTALL]"  "Finished"
+Log "[Install]" "Finished"

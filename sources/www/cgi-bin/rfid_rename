@@ -3,42 +3,25 @@
 source /www/cgi-bin/setup.inc
 source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
+source /www/cgi-bin/rfid.inc
 
-#KillProcess
-ReadUrlParam
-
+ReadUrlParams
 TAG_ID=${URLParam[tag]}
 NAME=${URLParam[name]}
-COLOR=${URLParam[color]}
+COLOR=${URLParam[color]:-31}
+CheckMandatoryParameter "${TAG_ID}" tag
 
-CheckMandatoryParameter "$TAG_ID" tag
-#CheckMandatoryParameter "$NAME" name
-#CheckMandatoryParameter "$COLOR" color
+CheckMandatoryTagId "${CNF_DATADIR}/Rfid" ${TAG_ID}
 
-if [ ! -e "$CNF_DATADIR/Rfid/$TAG_ID.rfid" ]; then
-   DATA='{"return":"1","msg":"Tag ID not found."}'
-   SendResponse "$DATA"
-   exit 0
-fi
-
+KillProcess
 
 # Update informations
-echo $RFID_COLOR > $CNF_DATADIR/Rfid/${RFID_ID}.color
-
-if [ "$NAME" != "" ]; then                          
-     echo $( echo "$NAME" | UrlDecode) > $CNF_DATADIR/Rfid/$TAG_ID.name
+echo ${RFID_COLOR} >${CNF_DATADIR}/Rfid/${RFID_ID}.color
+if [ -n "${NAME}" ]; then
+     echo "${NAME}" | UrlDecode >${CNF_DATADIR}/Rfid/${TAG_ID}.name
 else
-     rm -f $CNF_DATADIR/Rfid/$TAG_ID.name >> /dev/null 2>> /dev/null
-fi 
-
-if [ "$COLOR" != "" ]; then
-     echo "$COLOR" > $CNF_DATADIR/Rfid/$TAG_ID.color
-else
-    echo "31" > $CNF_DATADIR/Rfid/$TAG_ID.color
+     rm -f ${CNF_DATADIR}/Rfid/${TAG_ID}.name &>/dev/null
 fi
-   
-
+echo "${COLOR}" >${CNF_DATADIR}/Rfid/${TAG_ID}.color
 DATA='{"return":"0"}'
-SendResponse "$DATA"
-
-
+SendResponse "${DATA}"

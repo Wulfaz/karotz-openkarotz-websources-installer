@@ -4,42 +4,31 @@ source /www/cgi-bin/setup.inc
 source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
 source /www/cgi-bin/leds.inc
-source /www/cgi-bin/ears.inc
 source /www/cgi-bin/webcam.inc
 
-KillProcess LEDS
+ReadUrlParams
+SILENT=${URLParam[silent]:-0}
 
-ReadUrlParam
-TDIR=$CNF_DATADIR"/Snapshots/"
+FN="snapshot_$(date +'%Y_%m_%d_%H_%M_%S')"
+CheckMandatoryDirectory "${CNF_DATADIR}/Snapshots"
 
+KillProcess LED
 
-if [ ! -e $TDIR ]; then
-    DATA='{"return":"1","msg":"Snapshot directory not found."}'
-    SendResponse "$DATA"
-    exit 0
-fi
-            
-SILENT=${URLParam[silent]}
-
-
-FN="snapshot"_`date +'%Y_%m_%d_%H_%M_%S'`
 TakeSnapshot
-
-if [ ! -e "$CNF_DATADIR/Run/karotz.sleep" ]; then
-  LedsRestore
-  if [ "$SILENT" == "" ]; then
-    PlaySound /usr/karotz/res/sounds/webcam.mp3
-  fi
+if [ ! -e "${CNF_DATADIR}/Run/karotz.sleep" ]; then
+    LedsRestore
+    if [ ${SILENT} -eq 0 ]; then
+        PlaySound /usr/karotz/res/sounds/webcam.mp3
+    fi
 fi
-
 if [ ! -e "/tmp/picture.jpg" ]; then
-    DATA='{"return":"1","msg":"Unable to take snapshot."}'
-    SendResponse "$DATA"
-    exit 0
+    Log "[Snapshot]" "Unable to take a snapshot" 1
+    DATA='{"return":"1","msg":"Unable to take a snapshot."}'
+else
+    Log "[Snapshot]" "Snapshot saved"
+    mv /tmp/picture.jpg "${CNF_DATADIR}/Snapshots/${FN}.jpg"
+    #TODO a new way to create thumbnail could be great
+    /usr/bin/arm-linux-djpeg -gif -scale 1/4 -outfile "${CNF_DATADIR}/Snapshots/${FN}.thumb.gif" "${CNF_DATADIR}/Snapshots/${FN}.jpg"
+    DATA='{"return":"0","filename":"'${FN}'.jpg","thumb":"'${FN}'.thumb.gif"}'
 fi
-            
-mv /tmp/picture.jpg $TDIR$FN.jpg
-/usr/bin/arm-linux-djpeg -gif -scale 1/4 -outfile $TDIR$FN.thumb.gif $TDIR$FN.jpg
-
-DATA='{"filename":"'$FN'.jpg","thumb":"'$FN'.thumb.gif","return":"0"}'
-SendResponse "$DATA"
+SendResponse "${DATA}"

@@ -1,19 +1,18 @@
 #!/bin/bash
 
+#TODO looks like only fr exists... Double check!
 echo "Downloading Moods"
 echo "FR ----------------------------"
-/usr/www/cgi-bin/get_moods fr
+/www/cgi-bin/get_moods fr
 echo "UK ----------------------------"
-/usr/www/cgi-bin/get_moods uk
+/www/cgi-bin/get_moods uk
 echo "US ----------------------------"
-/usr/www/cgi-bin/get_moods us
+/www/cgi-bin/get_moods us
 echo "IT ----------------------------"
-/usr/www/cgi-bin/get_moods it
+/www/cgi-bin/get_moods it
 echo "ES ----------------------------"
-/usr/www/cgi-bin/get_moods es
+/www/cgi-bin/get_moods es
 echo "BE ----------------------------"
-/usr/www/cgi-bin/get_moods be
+/www/cgi-bin/get_moods be
 echo "BR ----------------------------"
-/usr/www/cgi-bin/get_moods br
-
-
+/www/cgi-bin/get_moods br

@@ -1,5 +1,4 @@
 
- 
 .badge {
   background: #BA070F;
   color: #fff;
@@ -12,21 +11,21 @@
   border: 2px solid #fff;
 }
 
-body 
+body
 {
 	font-family: "Trebuchet MS", "Helvetica", "Arial",  "Verdana", "sans-serif";
 	font-size: 62.5%;
 }
- 
-label 
+
+label
 {
  display: inline-block;
  width: 5em;
 }
- 
+
 a:hover, a:visited, a:link, a:active
 {
-    text-decoration: none;
+	text-decoration: none;
 }
 
 .ui-progressbar

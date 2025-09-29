@@ -4,16 +4,11 @@ source /www/cgi-bin/setup.inc
 source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
 
-if [ ! -d "$CNF_DATADIR/Stories" ]; then
-  DATA='{"return":"1","msg":"Stories directory missing"}'
-  SendResponse "$DATA"
-  exit
-fi
+CheckMandatoryDirectory "${CNF_DATADIR}/Stories"
 
-if [ -e "$CNF_DATADIR/Stories/stories.json" ]; then
-  TG=`cat $CNF_DATADIR/Stories/stories.json`
+if [ -e "${CNF_DATADIR}/Stories/stories.json" ]; then
+    TG=$(cat ${CNF_DATADIR}/Stories/stories.json)
 else
-  TG='{"stories":[],"return":"0"}'
+    TG='{"return":"0","stories":[]}'
 fi
-
-SendResponse "$TG"
+SendResponse "${TG}"

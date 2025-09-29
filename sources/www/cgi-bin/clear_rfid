@@ -1,11 +1,19 @@
 #!/bin/bash
 
-source /usr/www/cgi-bin/setup.inc
-source /usr/www/cgi-bin/url.inc
-source /usr/www/cgi-bin/utils.inc
+source /www/cgi-bin/setup.inc
+source /www/cgi-bin/utils.inc
+source /www/cgi-bin/url.inc
 
-rm  -rf $CNF_DATADIR/Rfid/*  >>/dev/null 2>>/dev/null 
-DATA='{"return":"0"}'
+ReadUrlParams
+# Checking Forced Update
+FU=${URLParam[force]:${1:-0}}
 
-SendResponse "$DATA"
-
+if [ ${FU} -eq 1 ]; then
+	rm -rf ${CNF_DATADIR}/Rfid/* &>/dev/null
+	Log "[Rfid]" "Rfid list cleared"
+	DATA='{"return":"0"}'
+else
+	Log "[Rfid]" "Rfid list not cleared, use force param" 1
+	DATA='{"return":"1","msg":"Rfid list not cleared, use force param"}'
+fi
+SendResponse "${DATA}"

@@ -1,15 +1,13 @@
 #!/bin/bash
 
 source /www/cgi-bin/setup.inc
-source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
 
-CheckMandatoryDirectory "/www/cgi-bin"
+CDIR="/www/cgi-bin"
+CheckMandatoryDirectory ${CDIR}
 
-chmod 777 /usr/www >> /dev/null 2>> /dev/null 
-chmod -R 777 /usr/www/cgi-bin >> /dev/null 2>> /dev/null
-
-
+chmod -R u=rwX,go=rX /www &>/dev/null
+find ${CDIR} \! \( -name \*.bak -o -name \*.BAKUP\* \) -exec chmod ugo+x {} \; &>/dev/null
+Log "[System]" "Permissions set to /www/ and childen folders"
 DATA='{"return":"0"}'
-SendResponse "$DATA"
-
+SendResponse "${DATA}"

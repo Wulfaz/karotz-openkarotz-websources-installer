@@ -1,13 +1,13 @@
 <script>
 	$("#btn_wakeup").on('click', function () {SendCommand ("wakeup", "Sending command ...");});
-	$("#btn_wakeup_silent").on('click', function () {SendCommand ("wakeup?silent=1", "Sending command ...");});	
+	$("#btn_wakeup_silent").on('click', function () {SendCommand ("wakeup?silent=1", "Sending command ...");});
 	$("#btn_sleep").on('click', function () {SendCommand ("sleep", "Sending command ...");});
-	
-$("#tips_state_1").on('click', function () 	{ $("#dlg_clipboard").data('tips', '/cgi-bin/wakeup').dialog( "open" ); });	
 
-$("#tips_state_2").on('click', function () 	{ $("#dlg_clipboard").data('tips', '/cgi-bin/wakeup?silent=1').dialog( "open" ); });	
+	$("#tips_state_1").on('click', function ()	{ $("#dlg_clipboard").data('tips', '/cgi-bin/wakeup').dialog( "open" ); });
 
-$("#tips_state_3").on('click', function () 	{ $("#dlg_clipboard").data('tips', '/cgi-bin/sleep').dialog( "open" ); });	
+	$("#tips_state_2").on('click', function ()	{ $("#dlg_clipboard").data('tips', '/cgi-bin/wakeup?silent=1').dialog( "open" ); });
+
+	$("#tips_state_3").on('click', function ()	{ $("#dlg_clipboard").data('tips', '/cgi-bin/sleep').dialog( "open" ); });
 
 </script>
 

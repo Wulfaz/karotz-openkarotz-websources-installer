@@ -4,123 +4,89 @@ source /www/cgi-bin/setup.inc
 source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
 
-ReadUrlParam
+ReadUrlParams
+FORMAT=${URLParam[format]:-json}
 
-FORMAT=${URLParam[format]}
-
-if [ ! -e "/usr/www/ok.version" ]; then
-    VERSION=0
-else
-    VERSION=`cat /usr/www/ok.version`
+VERSION=0
+PATCH=0
+LED_COLOR=${CNF_BREEZE_COLOR}
+PULSE=0
+SLEEP=0
+SLEEP_TIME=0
+VIP=0.0.0.0
+ETH_MAC="00:00:00:00:00:00"
+WLAN_MAC="00:00:00:00:00:00"
+if [ -e "/www/ok.version" ]; then
+	VERSION=$(cat /www/ok.version)
+fi
+if [ -e "/www/ok_patch" ]; then
+	PATCH=$(cat /www/ok_patch)
+fi
+if [ -e "${CNF_DATADIR}/Run/led.color" ]; then
+	LED_COLOR=$(cat ${CNF_DATADIR}/Run/led.color)
+fi
+if [ -e "${CNF_DATADIR}/Run/led.pulse" ]; then
+	PULSE=$(cat ${CNF_DATADIR}/Run/led.pulse)
+fi
+if [ -e "${CNF_DATADIR}/Run/karotz.sleep" ]; then
+	SLEEP=1
+	SLEEP_TIME=$(cat ${CNF_DATADIR}/Run/karotz.time.sleep)
+fi
+if [ -e "${CNF_DATADIR}/Run/Vera.ip" ]; then
+	VIP=$(cat ${CNF_DATADIR}/Run/Vera.ip)
+fi
+if ifconfig -a | grep eth0 &>/dev/null; then
+	ETH_MAC=$(ifconfig eth0 2>/dev/null | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}') >/
+fi
+if ifconfig -a | grep wlan0 &>/dev/null; then
+	WLAN_MAC=$(ifconfig wlan0 2>/dev/null | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
 fi
 
-if [ ! -e "/usr/www/ok_patch" ]; then
-    PATCH=0
-else
-    PATCH=`cat /usr/www/ok_patch`
+CS=$(find ${CNF_DATADIR}/Tmp/ -type f -name "*.txt" 2>/dev/null | wc -l)
+NT=$(find ${CNF_DATADIR}/Rfid/ -type f -name "*.rfid" 2>/dev/null | wc -l)
+NM=$(find ${CNF_DATADIR}/Moods/fr/ -type f -name "*.mp3" 2>/dev/null | wc -l)
+NS=$(find ${CNF_DATADIR}/Sounds/ -type f -name "*.mp3" 2>/dev/null | wc -l)
+NST=$(find ${CNF_DATADIR}/Stories/ -type f -name "*.mp3" 2>/dev/null | wc -l)
+
+UFS=-1
+if mount | grep usbkey 2>/dev/null; then
+	UFS=$(df -Ph /mnt/usbkey 2>/dev/null | awk 'NR==2{print $4}')
+	UFSP=$(df /mnt/usbkey 2>/dev/null | awk '{ print $5 }' | tail -n 1)
+	UFSP="${UFSP%?}"
 fi
-
-if [ ! -e "$CNF_DATADIR/Run/led.color" ]; then
-
-    LED_COLOR=00FF00
-else
-    LED_COLOR=`cat $CNF_DATADIR/Run/led.color`
-fi
-
-if [ ! -e "$CNF_DATADIR/Run/led.pulse" ]; then
-	PULSE=0
-else
-	PULSE=`cat $CNF_DATADIR/Run/led.pulse`
-fi
-
-if [ ! -e "$CNF_DATADIR/Run/karotz.sleep" ]; then
-        SLEEP=0
-else
-        SLEEP=1
-fi
-
-if [ ! -e "$CNF_DATADIR/Run/karotz.sleep" ]; then
-  SLEEP_TIME=0
-else
-  SLEEP_TIME=`cat $CNF_DATADIR/Run/karotz.time.sleep`
-fi
-
-
-if [ ! -e "$CNF_DATADIR/Run/Vera.ip" ]; then
-       VIP=0.0.0.0
-else
-       VIP=`cat $CNF_DATADIR/Run/Vera.ip`
-fi
-
-ifconfig -a | grep eth0  >>/dev/null 2>>/dev/null
-if [ $? = 0  ]; then
-   ETH_MAC=`ifconfig eth0 | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}'` >>/dev/null 2>>/dev/null
-else
-   ETH_MAC="00:00:00:00:00:00"
-fi
-
-ifconfig -a | grep wlan0  >>/dev/null 2>>/dev/null
-if [ $? = 0  ]; then
-   WLAN_MAC=`ifconfig wlan0 | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}'` >>/dev/null 2>>/dev/null
-else
-   WLAN_MAC="00:00:00:00:00:00"
-fi
-
-find  $CNF_DATADIR/Tmp -name "*.txt" > $CNF_DATADIR/Tmp/tmplst 2>>/dev/null
-CS=$(cat $CNF_DATADIR/Tmp/tmplst | wc -l)
-rm -f $CNF_DATADIR/Tmp/tmplst >> /dev/null 2>> /dev/null
-
-find  $CNF_DATADIR/Rfid -name "*.rfid" > $CNF_DATADIR/Tmp/tmplst 2>>/dev/null
-NT=$(cat $CNF_DATADIR/Tmp/tmplst | wc -l)
-rm -f $CNF_DATADIR/Tmp/tmplst >> /dev/null 2>> /dev/null
-
-
-NM=$( ls -R -A $CNF_DATADIR/Moods/fr/ | grep ".mp3" | wc -l) 2>>/dev/null
-NS=$( ls -A $CNF_DATADIR/Sounds/ | grep ".mp3" | wc -l) 2>>/dev/null
-NST=$( ls -A $CNF_DATADIR/Stories/ | grep ".mp3" | wc -l) 2>>/dev/null
-mount | grep usbkey >>/dev/null 2>>/dev/nul
-if [ $? -eq 0 ]; then
-   UFS=`df -Ph /mnt/usbkey | awk 'NR==2{print $4}'`  >>/dev/null 2>>/dev/nul
-   UFSP=`df /mnt/usbkey| awk '{ print $5 }' | tail -n 1` >>/dev/null 2>>/dev/nul
-   UFSP="${UFSP%?}"
-else
-   UFS=-1
-fi
-KFS=`df -Ph /usr | awk 'NR==2{print $4}'`  >>/dev/null 2>>/dev/nul
-KFSP=`df /usr | awk '{ print $5 }' | tail -n 1` >>/dev/null 2>>/dev/nul
+KFS=$(df -Ph /usr 2>/dev/null | awk 'NR==2{print $4}')
+KFSP=$(df /usr 2>/dev/null | awk '{ print $5 }' | tail -n 1)
 KFSP="${KFSP%?}"
 
-if [ -e "$CNF_DATADIR/Run/ears.disabled" ]; then
-  ED=1
-else
-  ED=0
+ED=0
+if [ -e "${CNF_DATADIR}/Run/ears.disabled" ]; then
+	ED=1
 fi
 
-if [ "$FORMAT" == "xml" ] || [ "$FORMAT" == "XML" ]; then
-  L0='<?xml version="1.0" encoding="iso-8859-1"?>\n'
-  L1='<OPENKAROTZ>\n'
-  L2='\t<VERSION>'$VERSION'</VERSION>\n\t<PATCH>'$PATCH'</PATCH>\n'
-  L3='\t<EARS_DISABLED>'$ED'</EARS_DISABLED>\n'
-  L4='\t<SLEEP>'$SLEEP'</SLEEP>\n\t<SLEEP_TIME>'$SLEEP_TIME'</SLEEP_TIME>\n'
-  L5='\t<LED_COLOR>'$LED_COLOR'</LED_COLOR>\n\t<LED_PULSE>'$PULSE'</LED_PULSE>\n'
-  L6='\t<TTS_CACHE_SIZE>'$CS'</TTS_CACHE_SIZE>\n'
-  L7='\t<ETH_MAC>'$ETH_MAC'</ETH_MAC>\n\t<WLAN_MAC>'$WLAN_MAC'</WLAN_MAC>\n'
-  L8='\t<KAROTZ_USED_SPACE>'$KFSP'</KAROTZ_USED_SPACE>\n'
-  L9='\t<USB_USED_SPACE>'$UFSP'</USB_USED_SPACE>\n\t<RETURN>0</RETURN>\n'
-  L10='</OPENKAROTZ>\n\n'
-  DATA=$L0$L1$L2$L3$L4$L5$L6$L7$L8$L9$L10
+if [ "${FORMAT}" == "xml" ] || [ "${FORMAT}" == "XML" ]; then
+	L0='<?xml version="1.0" encoding="iso-8859-1"?>\n'
+	L1='<OPENKAROTZ>\n'
+	L2='\t<VERSION>'${VERSION}'</VERSION>\n\t<PATCH>'${PATCH}'</PATCH>\n'
+	L3='\t<EARS_DISABLED>'${ED}'</EARS_DISABLED>\n'
+	L4='\t<SLEEP>'${SLEEP}'</SLEEP>\n\t<SLEEP_TIME>'${SLEEP_TIME}'</SLEEP_TIME>\n'
+	L5='\t<LED_COLOR>'${LED_COLOR}'</LED_COLOR>\n\t<LED_PULSE>'${PULSE}'</LED_PULSE>\n'
+	L6='\t<TTS_CACHE_SIZE>'${CS}'</TTS_CACHE_SIZE>\n'
+	L7='\t<ETH_MAC>'${ETH_MAC}'</ETH_MAC>\n\t<WLAN_MAC>'${WLAN_MAC}'</WLAN_MAC>\n'
+	L8='\t<KAROTZ_USED_SPACE>'${KFSP}'</KAROTZ_USED_SPACE>\n'
+	L9='\t<USB_USED_SPACE>'${UFSP}'</USB_USED_SPACE>\n\t<RETURN>0</RETURN>\n'
+	L10='</OPENKAROTZ>\n\n'
+	DATA=${L0}${L1}${L2}${L3}${L4}${L5}${L6}${L7}${L8}${L9}${L10}
 else
- L0='{'
- L1='"version":"'$VERSION'","patch":"'$PATCH'","ears_disabled":"'$ED'","sleep":"'$SLEEP'","sleep_time":"'$SLEEP_TIME'"'
- L2=',"led_color":"'$LED_COLOR'","led_pulse":"'$PULSE'","tts_cache_size":"'$CS
- L3='","usb_free_space":"'$UFS'","karotz_free_space":"'$KFS'","eth_mac":"'$ETH_MAC'","wlan_mac":"'$WLAN_MAC'"'
- L4=',"nb_tags":"'$NT'"'
- L5=',"nb_moods":"'$NM'","nb_sounds":"'$NS'","nb_stories":"'$NST'"'
- L6=',"karotz_percent_used_space":"'$KFSP'"'
- L7=',"usb_percent_used_space":"'$UFSP'"'
- L8=',"data_dir":"'$CNF_DATADIR'"'
- L10='}'
- DATA=$L0$L1$L2$L3$L4$L5$L6$L7$L8$L10
+	L0='{'
+	L1='"version":"'${VERSION}'","patch":"'${PATCH}'","ears_disabled":"'${ED}'","sleep":"'${SLEEP}'","sleep_time":"'${SLEEP_TIME}'"'
+	L2=',"led_color":"'${LED_COLOR}'","led_pulse":"'${PULSE}'","tts_cache_size":"'${CS}
+	L3='","usb_free_space":"'${UFS}'","karotz_free_space":"'${KFS}'","eth_mac":"'${ETH_MAC}'","wlan_mac":"'${WLAN_MAC}'"'
+	L4=',"nb_tags":"'${NT}'"'
+	L5=',"nb_moods":"'${NM}'","nb_sounds":"'${NS}'","nb_stories":"'${NST}'"'
+	L6=',"karotz_percent_used_space":"'${KFSP}'"'
+	L7=',"usb_percent_used_space":"'${UFSP}'"'
+	L8=',"data_dir":"'${CNF_DATADIR}'"'
+	L10='}'
+	DATA=${L0}${L1}${L2}${L3}${L4}${L5}${L6}${L7}${L8}${L10}
 fi
-
-SendResponse "$DATA"
+SendResponse "${DATA}"

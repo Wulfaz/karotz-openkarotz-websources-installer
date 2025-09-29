@@ -4,25 +4,27 @@ source /www/cgi-bin/setup.inc
 source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
 
-ReadUrlParam
-
+ReadUrlParams
 CMD=${URLParam[cmd]}
+CheckMandatoryParameter "${CMD}" cmd
 
-
-DATA='{"return":"1","Nothing to do"}'
-
-if [ "$CMD" = "start" ]; then
-  killall syslogd >> /dev/null 2>> /dev/null
-  touch /etc/conf/enable_syslogd
-  /sbin/syslogd -s 50 -b 2 
-  DATA='{"return":"0"}'
-fi
-
-if [ "$CMD" = "stop" ]; then
-  rm -f /etc/conf/enable_syslogd >> /dev/null 2>> /dev/null
-  killall syslogd >> /dev/null 2>> /dev/null
-  DATA='{"return":"0"}'
-fi
-
-SendResponse "$DATA"
-
+case ${CMD} in
+  "start")
+    killall syslogd &>/dev/null
+    touch /etc/conf/enable_syslogd
+    /sbin/syslogd -s 50 -b 2
+    Log "[Tools]" "Log system started"
+    DATA='{"return":"0","msg":"Log system started."}'
+    ;;
+  "stop")
+    rm -f /etc/conf/enable_syslogd &>/dev/null
+    killall syslogd &>/dev/null
+    Log "[Tools]" "Log system stopped"
+    DATA='{"return":"0","msg":"Log system stopped."}'
+    ;;
+  *)
+    Log "[Tools]" "Command not found" 1
+    DATA='{"return":"1","msg":"Command not found."}'
+    ;;
+esac
+SendResponse "${DATA}"

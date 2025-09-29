@@ -3,9 +3,6 @@
 source /www/cgi-bin/setup.inc
 source /www/cgi-bin/utils.inc
 
-ps eax > /tmp/ps.txt
-VL=`awk '{printf "%s\n\r", $0}' /tmp/ps.txt`
-rm -f /tmp/ps.txt
-
-SendResponse "$VL"
-
+VL=$(ps eax | awk '{printf "%s\r\n", $0}')
+Log "[Tools]" "Retrieve active process list"
+SendResponse "${VL}"

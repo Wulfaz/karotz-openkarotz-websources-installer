@@ -4,33 +4,29 @@ source /www/cgi-bin/setup.inc
 source /www/cgi-bin/url.inc
 source /www/cgi-bin/url_ext.inc
 source /www/cgi-bin/utils.inc
+source /www/cgi-bin/rfid.inc
 
 cgi_getvars BOTH ALL
+URL=${url}
+RAW_PARAM=${param}
+NAME=${name}
+USR=${user}
+PASS=${password}
+CheckMandatoryParameter "${URL}" url
 
-URL=$url
-RAW_PARAM=$param
-NAME=$name
-USR=$user
-PASS=$password
+PARAM=$(echo "${RAW_PARAM}" | busybox base64 -d)
+URL=$(BuildUrl "${URL}" "${PARAM}" "${USR}" "${PASS}" 1)
 
-PARAM=$(echo "$RAW_PARAM" | base64 -d )
-CheckMandatoryParameter "$URL" url
-
-URL=$(BuildUrl "$URL" "$PARAM" "$USR" "$PASS" 1)
-
-rm -f /tmp/curlout >>/dev/null 2>>/dev/null
-ERR=$(GetUrl "$URL" "$USR" "$PASS" "$RAW_PARAM")
-if [ "$ERR" -eq "0" ]; then
-  if [ -e "/tmp/curlout" ]; then 
-    VAL=$(cat /tmp/curlout | sed 's/"/\\\\"/g')
-  else
-    VAL="No output received from command"
-  fi
-      DATA='{"return":"0","msg":"'$VAL'"}'
+rm -f /tmp/curlout &>/dev/null
+ERR=$(GetUrl "${URL}" "${USR}" "${PASS}" "${RAW_PARAM}")
+if [ ${ERR} -eq 0 ]; then
+    if [ -e "/tmp/curlout" ]; then
+        VAL=$(cat /tmp/curlout | sed 's/"/\\\\"/g')
+    else
+        VAL="No output received from command."
+    fi
+    DATA='{"return":"0","msg":"'${VAL}'"}'
 else
-   DATA='{"return":"1","msg":"'$(GetCurlError $ERR)'"}'
+    DATA='{"return":"1","msg":"'$(GetCurlError ${ERR})'"}'
 fi
-   
-SendResponse "$DATA"
-
-
+SendResponse "${DATA}"

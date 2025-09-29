@@ -3,53 +3,31 @@
 source /www/cgi-bin/setup.inc
 source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
-source /www/cgi-bin/leds.inc
 source /www/cgi-bin/ears.inc
 
-ReadUrlParam
+Log "[Apps Clock]" "Clock Called"
 
-H=${URLParam[hour]}
- 
-CheckMandatoryDirectory  "$CNF_DATADIR/Apps"
-CheckMandatoryDirectory  "$CNF_DATADIR/Apps/Clock"
-CheckMandatoryDirectory  "$CNF_DATADIR/Apps/Clock/Data" 
-        
-if [ -e "$CNF_DATADIR/Run/karotz.sleep" ]; then
-   DATA='{"return":"1","msg":"Unable to perform action, rabbit is sleeping."}'
-   SendResponse "$DATA"
-   exit 0
-fi
+CheckIsNotSleeping
 
-Log "[APPS][CLOCK]" "Clock Called"
+ReadUrlParams
+HOUR=${URLParam[hour]:-$((10#$(date +%H)))}
 
-if [ "$H" == "" ]; then
-  D=$(date +%H)
-  HOUR=$(( 10#$D ))
+CheckMandatoryDirectory "${CNF_DATADIR}/Apps"
+CheckMandatoryDirectory "${CNF_DATADIR}/Apps/Clock"
+CheckMandatoryDirectory "${CNF_DATADIR}/Apps/Clock/Data"
+CheckMandatoryDirectory "${CNF_DATADIR}/Apps/Clock/Data/${HOUR}"
+
+KillProcess SOUNDS
+
+NB=$(find ${CNF_DATADIR}/Apps/Clock/Data/${HOUR}/ -type f -name "*.mp3" 2>/dev/null | wc -l)
+SOUND=$((RANDOM % NB + 1))
+if [ ! -e "${CNF_DATADIR}/Apps/Clock/Data/${HOUR}/${SOUND}.mp3" ]; then
+	Log "[Apps Clock]" "Sound not found" 1
+	DATA='{"return":"1","msg":"File not found for hour '${HOUR}'."}'
 else
-  HOUR=$H
+	Log "[Apps Clock]" "Playing sound: "${CNF_DATADIR}/Apps/Clock/Data/${HOUR}/${SOUND}.mp3
+	EarsReset
+	PlaySound ${CNF_DATADIR}/Apps/Clock/Data/${HOUR}/${SOUND}.mp3 1
+	DATA='{"return":"0","hour":"'${HOUR}'"}'
 fi
-
-MIN=1  
-if [ ! -d "$CNF_DATADIR/Apps/Clock/Data/$HOUR" ]; then
-   DATA='{"return":"1","msg":"No sound for this time."}'
-   SendResponse "$DATA"
-   exit 0
-fi
-       find  $CNF_DATADIR/Apps/Clock/Data/$HOUR -name "*.mp3" > $CNF_DATADIR/Tmp/tmplst
-       NB=$(cat $CNF_DATADIR/Tmp/tmplst | wc -l)
-       r=$RANDOM
-       if [ $NB -gt 0 ]; then
-          SOUND=$[($RANDOM % ($[$NB - $MIN] + 1)) + $MIN] >>/dev/null 2>>/dev/null
-          if [ -f "$CNF_DATADIR/Apps/Clock/Data/$HOUR/$SOUND.mp3" ]; then
-            Log "[APPS][CLOCK]"  "Playing sound : "$CNF_DATADIR/Apps/Clock/Data/$HOUR/$SOUND.mp3
-            PlaySound  $CNF_DATADIR/Apps/Clock/Data/$HOUR/$SOUND.mp3 1
-            EarsReset
-            DATA='{"return":"0","hour":"'$HOUR'"}'
-       else
-	    DATA='{"return":"1","msg":"No sound for this time."}'       
-       fi
-       else
-          DATA='{"return":"1","hour":"'$HOUR'"}'
-       fi
-
-SendResponse "$DATA"
+SendResponse "${DATA}"

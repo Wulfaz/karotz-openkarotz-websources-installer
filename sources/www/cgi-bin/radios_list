@@ -1,16 +1,16 @@
 #!/bin/bash
 
 source /www/cgi-bin/setup.inc
-source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
 
-CheckMandatoryDirectory  "$CNF_DATADIR/Moods"
-CheckMandatoryDirectory  "$CNF_DATADIR/Moods/fr"
- 
- 
-if [ -e "$CNF_DATADIR/Apps/Streams/radios.json"  ]; then
-   TG=`cat $CNF_DATADIR/Apps/Streams/radios.json`
+CheckMandatoryDirectory "${CNF_DATADIR}/Apps"
+CheckMandatoryDirectory "${CNF_DATADIR}/Apps/Streams"
+
+if [ -e "${CNF_DATADIR}/Apps/Streams/radios.json" ]; then
+	Log "[Streams]" "Retrieve radio list"
+	TG=$(cat ${CNF_DATADIR}/Apps/Streams/radios.json)
 else
-   TG='{"return":"1","msg":"Unable to found radios list" }'
-fi                     
-SendResponse "$TG"
+	Log "[Streams]" "Radio list not found" 1
+	TG='{"return":"1","msg":"Radio list not found."}'
+fi
+SendResponse "${TG}"

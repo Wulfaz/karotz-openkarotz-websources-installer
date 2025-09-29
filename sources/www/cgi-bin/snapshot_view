@@ -4,30 +4,27 @@ source /www/cgi-bin/setup.inc
 source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
 source /www/cgi-bin/leds.inc
-source /www/cgi-bin/ears.inc
 source /www/cgi-bin/webcam.inc
 
-KillProcess LEDS
+ReadUrlParams
+SILENT=${URLParam[silent]:-0}
 
-ReadUrlParam
-TDIR=$CNF_DATADIR"/Snapshots/"
+FN="snapshot_$(date +'%Y_%m_%d_%H_%M_%S')"
 
-SILENT=${URLParam[silent]}
-            
-FN="snapshot"_`date +'%Y_%m_%d_%H_%M_%S'`
+KillProcess LED
+
 TakeSnapshot
-
-if [ ! -e "$CNF_DATADIR/Run/karotz.sleep" ]; then
-  LedsRestore
-  if [ "$SILENT" == "" ]; then
-    PlaySound /usr/karotz/res/sounds/webcam.mp3
-  fi
+if [ ! -e "${CNF_DATADIR}/Run/karotz.sleep" ]; then
+    LedsRestore
+    if [ ${SILENT} -eq 0 ]; then
+        PlaySound /usr/karotz/res/sounds/webcam.mp3
+    fi
 fi
-
 if [ ! -e "/tmp/picture.jpg" ]; then
+    Log "[Snapshot]" "Snapshot nor found" 1
     exit 0
 fi
-
+#TODO SendResponse for jpeg! Rewrite not done yet
 echo "Server: OpenKarotz WebServer 1.0"
 echo "Connection: close"
 echo "Accept-Ranges: bytes"
@@ -35,4 +32,3 @@ echo "Content-type: image/jpeg"
 echo "Access-Control-Allow-Origin: *"
 echo ""
 cat /tmp/picture.jpg
-

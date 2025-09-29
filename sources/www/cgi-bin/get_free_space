@@ -4,21 +4,14 @@ source /www/cgi-bin/setup.inc
 source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
 
-mount | grep usbkey >>/dev/null 2>>/dev/nul
-if [ $? -eq 0 ]; then
-   UFSP=`df /mnt/usbkey| awk '{ print $5 }' | tail -n 1 2>>/dev/nul`
-   
+UFSP=-1
+if mount | grep usbkey; then
+   UFSP=$(df /mnt/usbkey 2>/dev/null | awk '{ print $5 }' | tail -n 1)
    UFSP="${UFSP%?}"
-else
-   UFSP=-1
 fi
-KFSP=`df /usr | awk '{ print $5 }' | tail -n 1 2>>/dev/nul`
+KFSP=$(df /usr 2>/dev/null | awk '{ print $5 }' | tail -n 1)
 KFSP="${KFSP%?}"
-
-L0='{'
-L6='"karotz_percent_used_space":"'$KFSP'"'
-L7=',"usb_percent_used_space":"'$UFSP'"'
-L10='}'
-DATA=$L0$L6$L7$L10
-
-SendResponse "$DATA"
+Log "[System]" "Karotz internal percentage used space: ${KFSP}"
+Log "[System]" "Karotz USB percentage used space: ${UFSP}"
+DATA='{"karotz_percent_used_space":"'${KFSP}'","usb_percent_used_space":"'${UFSP}'"}'
+SendResponse "${DATA}"

@@ -1,17 +1,17 @@
 #!/bin/bash
 
+#TODO Warning identical to cgi-bin/get_list
 source /www/cgi-bin/setup.inc
 source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
 
-ReadUrlParam
-
+ReadUrlParams
 SRC=${URLParam[src]}
 DEST=${URLParam[dest]}
+CheckMandatoryParameter "${SRC}" src
+CheckMandatoryParameter "${DEST}" dest
 
-wget $CNF_ROOT_URL/$SRC -O $CNF_DATADIR/$DEST
-
-VL='{ "return":"0" }'
-
-SendResponse "$VL"
-
+wget ${CNF_ROOT_URL}/${SRC} -O ${CNF_DATADIR}/${DEST}
+Log "[API]" "${CNF_DATADIR}/${DEST} downladed"
+VL='{"return":"0","msg":"'${CNF_DATADIR}'/'${DEST}' downloaded."}'
+SendResponse "${VL}"

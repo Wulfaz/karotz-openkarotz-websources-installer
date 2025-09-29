@@ -4,10 +4,8 @@ source /www/cgi-bin/setup.inc
 source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
 
-
-rm -f  /var/log/messages* >> /dev/null 2>> /dev/null 
-touch /var/log/messages >> /dev/null 2>> /dev/null
-
+rm -f /var/log/messages* &>/dev/null
+touch /var/log/messages &>/dev/null
+Log "[Tools]" "Log message file cleared"
 DATA='{"return":"0"}'
-SendResponse "$DATA"
-
+SendResponse "${DATA}"

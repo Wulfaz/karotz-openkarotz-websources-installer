@@ -1,52 +1,36 @@
 #!/bin/bash
 
-source /usr/www/cgi-bin/setup.inc
-source /usr/www/cgi-bin/url.inc
-source /usr/www/cgi-bin/utils.inc
-source /usr/www/cgi-bin/ears.inc
+source /www/cgi-bin/setup.inc
+source /www/cgi-bin/url.inc
+source /www/cgi-bin/utils.inc
+source /www/cgi-bin/ears.inc
 
-Log "[MOODS]" "Moods Called"
+Log "[Apps Moods]" "Moods Called"
 
-KillProcess LEDS
+CheckIsNotSleeping
+
+ReadUrlParams
+MOOD=${URLParam[id]}
+LANG=${URLParam[lang]:-fr}
+if [ -z "${MOOD}" ]; then
+	NB=$(find ${CNF_DATADIR}/Moods/${LANG}/ -type f -name "*.mp3" 2>/dev/null | wc -l)
+	MOOD=$((RANDOM % NB + 1))
+fi
+
+CheckMandatoryDirectory "${CNF_DATADIR}/Moods"
+CheckMandatoryDirectory "${CNF_DATADIR}/Moods/${LANG}"
+
+KillProcess LED #TODO Why?
 KillProcess SOUNDS
-ReadUrlParam
 
-CheckMandatoryDirectory  "$CNF_DATADIR/Moods"
-CheckMandatoryDirectory  "$CNF_DATADIR/Moods/fr"
-
-MOODS_ID=${URLParam[id]}
-LANG=${URLParam[lang]}
-if [ "$LANG" = "" ]; then
-   LANG="fr"
-fi
-
-if [ "$MOODS_ID" = "" ]; then
-    r=$RANDOM
-    MOODS=$(( r %= 305 )) 
+if [ ! -e "${CNF_DATADIR}/Moods/${LANG}/${MOOD}.mp3" ]; then
+	Log "[Apps Moods]" "Mood not found ${MOOD} (${LANG})" 1
+	DATA='{"return":"1","msg":"File not found for mood '${MOOD}' ('${LANG}')."}'
 else
-    MOODS=$MOODS_ID    
-fi    
-
-if [ ! -e "$CNF_DATADIR/Moods/fr/${MOODS}.mp3" ]; then
-  DATA='{"return":"1","msg":"Moods not found"}'
-  Log "[MOODS]"  "Moods not found"
-  SendResponse "$DATA"  
-  exit 0
+	Log "[Apps Moods]" "Mood ${MOOD} (${LANG}) played"
+	#TODO Add a LEDs cinematic
+	EarsReset
+	PlaySound ${CNF_DATADIR}/Moods/${LANG}/${MOOD}.mp3 1
+	DATA='{"return":"0","mood":"'${MOOD}'"}'
 fi
-
-
-if [ ! -e "$CNF_DATADIR/Run/karotz.sleep" ]; then
-   EarsReset
-   if [ ! -e "$CNF_DATADIR/Moods/fr/${MOODS}.mp3" ]; then
-      DATA='{"return":"1","msg":"File not found."}'
-   else
-      PlaySound $CNF_DATADIR/Moods/fr/${MOODS}.mp3 1
-      DATA='{"moods":"'$MOODS'","return":"0"}'
-      Log "[MOODS]"  "Moods $MOODS played"
-   fi
-else
-   DATA='{"return":"1","msg":"Unable to perform action, rabbit is sleeping."}'
-   Log "[MOODS]"  "Rabbit if sleeping."
-fi
-
-SendResponse "$DATA"
+SendResponse "${DATA}"

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ZIBASE_BASE_URL='/cgi-bin/domo.cgi?cmd='

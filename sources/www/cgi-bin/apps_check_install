@@ -1,24 +1,22 @@
 #!/bin/bash
 
+#TODO Should use APP param + this script is not used by any other script -> should we keep it?
+
 source /www/cgi-bin/setup.inc
 source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
 
-KillProcess
-ReadUrlParam
+CheckIsNotSleeping
 
+ReadUrlParams
 APP=${URLParam[app]}
+CheckMandatoryParameter "${APP}" app
 
-CheckMandatoryParameter "$APP" app
-CheckMandatoryDirectory  "$CNF_DATADIR/Apps"
-CheckMandatoryDirectory  "$CNF_DATADIR/Apps/Clock"
-CheckMandatoryDirectory  "$CNF_DATADIR/Apps/Clock/Data"
+CheckMandatoryDirectory "${CNF_DATADIR}/Apps"
+CheckMandatoryDirectory "${CNF_DATADIR}/Apps/Clock"
+CheckMandatoryDirectory "${CNF_DATADIR}/Apps/Clock/Data"
+#TODO check other apps?
 
-if [ -e "$CNF_DATADIR/Run/karotz.sleep" ]; then
-   DATA='{"return":"1","msg":"Unable to perform action, rabbit is sleeping."}'
-      SendResponse "$DATA"
-         exit 0
-         fi
+KillProcess
 
-
-SendResponse "$AL"
+SendResponse "${AL}" #TODO ${AL}?

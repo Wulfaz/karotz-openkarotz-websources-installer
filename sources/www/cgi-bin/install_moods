@@ -1,34 +1,21 @@
 #!/bin/bash
 
-source /usr/www/cgi-bin/setup.inc
-source /usr/www/cgi-bin/url.inc
-source /usr/www/cgi-bin/utils.inc
+source /www/cgi-bin/setup.inc
+source /www/cgi-bin/url.inc
+source /www/cgi-bin/utils.inc
 
-ReadUrlParam
-
+#TODO is this file obsolete? Should we not use apps.moods.install instead?
+#TODO Only fr moods are installed -> how to integrate moods for other lang?
+#TODO Why not use SendResponse? Rewrite not done yet
 echo "Server: OpenKarotz WebServer 1.0 - Massalia 2013"
 echo "Connection: close"
 echo "Accept-Ranges: bytes"
 echo "Content-type: text/plain"
 echo ""
 
-# Checking Forced Update
-FU=${URLParam[force]}
-UU=${URLParam[usb]}
-
-
 # Checking root Web
-if [ ! -d $CNF_DATADIR/Apps ]; then
-   mkdir $CNF_DATADIR/Apps >>/dev/null 2>>/dev/null
+if [ ! -d ${CNF_DATADIR}/Apps/Moods/fr ]; then
+	mkdir -p ${CNF_DATADIR}/Apps/Moods/fr &>/dev/null
 fi
-
-if [ ! -d $CNF_DATADIR/Apps/Moods ]; then
-   mkdir $CNF_DATADIR/Apps/Moods >>/dev/null 2>>/dev/null
-fi
-
-if [ ! -d $CNF_DATADIR/Apps/Moods/fr ]; then
-   mkdir $CNF_DATADIR/Apps/Moods/fr >>/dev/null 2>>/dev/null
-fi
-
-Download $CNF_ROOT_URL /usbkey/Moods/fr $CNF_DATADIR/Apps/Moods/fr Moods 5
-
+Log "[Install][Apps]" "Moods"
+Download ${CNF_ROOT_URL} /usbkey/Moods/fr ${CNF_DATADIR}/Apps/Moods/fr Moods 5

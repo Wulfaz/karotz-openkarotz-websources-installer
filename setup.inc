@@ -1,17 +1,18 @@
+#!/bin/bash
 #
-# Global paramters
+# Global parameters
 #
 # Max Files in cache
 CNF_MAX_CACHE_SIZE=100
 
 # File Location
-TDIR="/usr/www/"
+TDIR="/www"
 CNF_DATADIR="/usr/openkarotz/"
 
 # Disable Ears
 CNF_EARS_DISABLED=0
 
-# RFID Action active even when Karotz is Sleeping
+# RFID Action active even when Karotz is sleeping
 CNF_RFID_ALWAYS_ACTIVE=1
 
 # Breeze Color
@@ -29,8 +30,7 @@ CNF_VERSION="210"
 CNF_ROOT_URL="http://karotz.filippi.org"
 
 # Base URL
-CNF_BASE_URL="$CNF_ROOT_URL/$CNF_VERSION"
+CNF_BASE_URL="${CNF_ROOT_URL}/${CNF_VERSION}"
 
-SOURCES_CNF="$CURRDIR/sources/openkarotz"
-SOURCES_TDIR="$CURRDIR/sources/www"
-
+SOURCES_CNF="${CURRDIR}/sources/openkarotz"
+SOURCES_TDIR="${CURRDIR}/sources/www"

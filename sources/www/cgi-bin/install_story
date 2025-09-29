@@ -1,26 +1,20 @@
 #!/bin/bash
 
-source /usr/www/cgi-bin/setup.inc
-source /usr/www/cgi-bin/url.inc
-source /usr/www/cgi-bin/utils.inc
+source /www/cgi-bin/setup.inc
+source /www/cgi-bin/utils.inc
 
-ReadUrlParam
-
+#TODO is this file obsolete? Should we not use apps.story.install instead?
+#TODO Why not use SendResponse? Rewrite not done yet
 echo "Server: OpenKarotz WebServer 1.0 - Massalia 2013"
 echo "Connection: close"
 echo "Accept-Ranges: bytes"
 echo "Content-type: text/plain"
 echo ""
 
-# Checking Forced Update
-FU=${URLParam[force]}
-UU=${URLParam[usb]}
-
-
 # Checking root Web
-if [ ! -d $CNF_DATADIR/Stories ]; then
-   mkdir $CNF_DATADIR/Stories >>/dev/null 2>>/dev/null
+if [ ! -d ${CNF_DATADIR}/Stories ]; then
+	mkdir ${CNF_DATADIR}/Stories &>/dev/null
 fi
 
-Download $CNF_ROOT_URL /usbkey/Stories $CNF_DATADIR/Stories Story 5
-
+Log "[Install][Apps]" "Story"
+Download ${CNF_ROOT_URL} /usbkey/Stories ${CNF_DATADIR}/Stories Story 5

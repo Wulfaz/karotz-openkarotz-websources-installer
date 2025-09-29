@@ -4,16 +4,15 @@ source /www/cgi-bin/setup.inc
 source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
 
-ReadUrlParam
+ReadUrlParams
+SRC=${URLParam[src]:-"."}
 
-SRC=${URLParam[src]}
-
-if [ ! -d $SRC ]; then
-  VL="Not found"
+if [ ! -d ${SRC} ]; then
+    Log "[Tools]" "Directory not found"
+    VL="Not found"
 else
-  ls -la $SRC  > /tmp/ls.txt
-  VL=`awk '{printf "%s\n\r", $0}' /tmp/ls.txt`
+    Log "[Tools]" "Retrieve ${SRC} directory content"
+    # shellcheck disable=SC2012
+    VL=$(ls -hAlLp1 ${SRC} | awk '{print $1,"\t",$3,"\t",$4,"",$5,"\t",$6,"\t",$7,$8,$9,$10,$11,$12,$13,$14,$15}')
 fi
-
-SendResponse "$VL"
-
+SendResponse "${VL}"

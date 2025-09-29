@@ -1,11 +1,9 @@
 #!/bin/bash
 
-source /usr/www/cgi-bin/setup.inc
-source /usr/www/cgi-bin/url.inc
-source /usr/www/cgi-bin/utils.inc
+source /www/cgi-bin/setup.inc
+source /www/cgi-bin/utils.inc
 
-rm  -rf $CNF_DATADIR/Snapshots/*  >>/dev/null 2>>/dev/null 
-DATA='{"return":"0"}'
-
-SendResponse "$DATA"
-
+rm -rf ${CNF_DATADIR}/Snapshots/* &>/dev/null
+Log "[Snapshot]" "Snapshots cleared"
+DATA='{"return":"0","msg":"Snapshots cleared."}'
+SendResponse "${DATA}"

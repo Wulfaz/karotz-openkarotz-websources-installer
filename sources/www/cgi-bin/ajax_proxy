@@ -1,20 +1,17 @@
 #!/bin/bash
 
-source /usr/www/cgi-bin/setup.inc
-source /usr/www/cgi-bin/utils.inc
-source /usr/www/cgi-bin/url.inc
+source /www/cgi-bin/setup.inc
+source /www/cgi-bin/utils.inc
+source /www/cgi-bin/url.inc
 
-ReadUrlParam
+ReadUrlParams
+L=${URLParam[url]:-${1:-${CNF_ROOT_URL}}}
 
-L=${URLParam[url]}
-#L=$1
-
-R=$(curl -w %{http_code} -s -L -k -o /tmp/curlout "$CNF_BASE_URL")
-if [ "$R" -eq "200" ]; then
-  DT=`cat /tmp/curlout`
-  rm -f /tmp/curlout
+R=$(curl -w "%{http_code}" -s -L -k -o /tmp/curlout "${L}")
+if [ ${R} -eq 200 ]; then
+	DT=$(cat /tmp/curlout 2>/dev/null)
+	rm -f /tmp/curlout
 else
- DT='{"return":"1","msg":"Error reading file"}'
+	DT='{"return":"1","msg":"Error reading file."}'
 fi
-
-SendResponse  "$DT"
+SendResponse "${DT}"

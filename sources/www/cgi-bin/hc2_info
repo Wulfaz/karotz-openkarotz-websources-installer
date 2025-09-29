@@ -1,21 +1,12 @@
 #!/bin/bash
 
 source /www/cgi-bin/setup.inc
-source /www/cgi-bin/url.inc
 source /www/cgi-bin/utils.inc
 
-
-if [ ! -e "$CNF_DATADIR/Run/vera.ip" ]; then
-  VERA_IP=""
-else
-  VERA_IP=`cat $CNF_DATADIR/Run/vera.ip`
+HC2_IP=""
+if [ -e "${CNF_DATADIR}/Run/hc2.ip" ]; then
+	HC2_IP=$(cat ${CNF_DATADIR}/Run/hc2.ip)
 fi
-
-
-L0='{'
-L1='"ip":"'$VERA_IP'"'
-L2=',"return":"0"'
-L3='}'
-DATA=$L0$L1$L2$L3
-
-SendResponse "$DATA"
+Log "[Home Automation]" "Retrieve Fibaro HC2 data"
+DATA='{"return":"0","ip":"'${HC2_IP}'"}'
+SendResponse "${DATA}"

@@ -1,359 +1,274 @@
 #!/bin/bash
 
-source /usr/www/cgi-bin/setup.inc
-source /usr/www/cgi-bin/url.inc
-source /usr/www/cgi-bin/utils.inc
+source /www/cgi-bin/setup.inc
+source /www/cgi-bin/url.inc
+source /www/cgi-bin/utils.inc
+source /www/cgi-bin/leds.inc
 
-TDIR="/usr/www"
-
-ReadUrlParam
-
-echo "Server: OpenKarotz WebServer 1.0 - Massalia 2013"
-echo "Connection: close"
-echo "Accept-Ranges: bytes"
-echo "Content-type: text/plain"
-echo ""
-
+ReadUrlParams
 # Checking Forced Update
-FU=${URLParam[force]}
-UU=${URLParam[usb]}
-
-if [ "$FU" == "1" ] || [ "$1" == "1" ]; then
- rm -f $TDIR/ok.version >>/dev/null 2>>/dev/null
+FU=${URLParam[force]:-${1:-0}}
+if [ ${FU} -eq 1 ]; then
+	rm -f ${TDIR}/ok.version &>/dev/null
 fi
 
 # Enable Logs at next reboot
-# Log Install Message in different file
-killall syslogd >>/dev/null 2>>/dev/null
-echo "" > /$CNF_DATADIR/install.log
-/sbin/syslogd -O /$CNF_DATADIR/install.log	>>/dev/null 2>>/dev/null
-touch /etc/conf/enable_syslogd >>/dev/null 2>>/dev/null
-Log  "[INSTALL]"  "Enabling Syslog"
+Log "[Install]" "Install messages in new file"
+killall syslogd &>/dev/null
+echo "" >/${CNF_DATADIR}/install.log
+/sbin/syslogd -O /${CNF_DATADIR}/install.log &>/dev/null
+touch /etc/conf/enable_syslogd &>/dev/null
+Log "[Install]" "Enabling Syslog"
 
 # Downloading Sound
-Log  "[INSTALL]"  "Downloading sounds"
-wget $CNF_BASE_URL/res/sounds/install_start.mp3 -q -O /tmp/start.mp3 >>/dev/null 2>>/dev/null
-wget $CNF_BASE_URL/res/sounds/install_end.mp3   -q -O /tmp/end.mp3   >>/dev/null 2>>/dev/null
+Log "[Install]" "Downloading install sounds"
+wget ${CNF_BASE_URL}/res/sounds/install_start.mp3 -q -O /tmp/start.mp3 &>/dev/null
+wget ${CNF_BASE_URL}/res/sounds/install_end.mp3 -q -O /tmp/end.mp3 &>/dev/null
 
-
-Log  "[INSTALL]"  "Killing default process"
-killall immortaldog >>/dev/null 2>>/dev/null
-/karotz/bin/led -l $ORANGE -p "000000" -d 700 &
+Log "[Install]" "Killing default process"
+killall immortaldog &>/dev/null
+#TODO: could not be ? Leds ${ORANGE} ${BLACK} 1
+/karotz/bin/led -l ${ORANGE} -p ${BLACK} -d 700 &
 killall led
 
 if [ -e "/tmp/start.mp3" ]; then
-  /usr/bin/madplay /tmp/start.mp3 >>/dev/null 2>>/dev/null
+	/usr/bin/madplay /tmp/start.mp3 &>/dev/null
 fi
 
 # Checking root Web
-if [ ! -d $TDIR ]; then
-   Log  "[INSTALL]"  "Creating directory:$TDIR"
-   mkdir $TDIR >>/dev/null 2>>/dev/null
-   Log  "[INSTALL]"  "Result:$?"
+if [ ! -d ${TDIR} ]; then
+	Log "[Install]" "Creating directory: ${TDIR}"
+	mkdir ${TDIR} &>/dev/null
+	Log "[Install]" "Result: $?"
 fi
-
 # Checking Data root
-if [ ! -d $CNF_DATADIR ]; then
-   Log  "[INSTALL]"  "Creating directory:$CNF_DATADIR"
-   mkdir $CNF_DATADIR >>/dev/null 2>>/dev/null
-   Log  "[INSTALL]"  "Result:$?"
+if [ ! -d ${CNF_DATADIR} ]; then
+	Log "[Install]" "Creating directory: ${CNF_DATADIR}"
+	mkdir ${CNF_DATADIR} &>/dev/null
+	Log "[Install]" "Result: $?"
 fi
-
 # Checking cgi-bin
-if [ ! -d $TDIR/cgi-bin ]; then
-   Log  "[INSTALL]"  "Creating directory:$TDIR/cgi-bin"
-   mkdir $TDIR/cgi-bin >>/dev/null 2>>/dev/null
-   Log  "[INSTALL]"  "Result:$?"
+if [ ! -d ${TDIR}/cgi-bin ]; then
+	Log "[Install]" "Creating directory: ${TDIR}/cgi-bin"
+	mkdir ${TDIR}/cgi-bin &>/dev/null
+	Log "[Install]" "Result: $?"
 fi
-
 # Checking images
-if [ ! -d $TDIR/images ]; then
-   Log  "[INSTALL]"  "Creating directory:$TDIR/images"
-   mkdir $TDIR/images >>/dev/null 2>>/dev/null
-   Log  "[INSTALL]"  "Result:$?"
+if [ ! -d ${TDIR}/images ]; then
+	Log "[Install]" "Creating directory: ${TDIR}/images"
+	mkdir ${TDIR}/images &>/dev/null
+	Log "[Install]" "Result: $?"
 fi
-
 # Checking Snapshots
-if [ ! -d $CNF_DATADIR/Snapshots ]; then
-   Log  "[INSTALL]"  "Creating directory:$CNF_DATADIR/Snapshots"
-   mkdir $CNF_DATADIR/Snapshots >>/dev/null 2>>/dev/null
-   Log  "[INSTALL]"  "Result:$?"
+if [ ! -d ${CNF_DATADIR}/Snapshots ]; then
+	Log "[Install]" "Creating directory: ${CNF_DATADIR}/Snapshots"
+	mkdir ${CNF_DATADIR}/Snapshots &>/dev/null
+	Log "[Install]" "Result: $?"
 fi
-
-if [ ! -L $TDIR/snapshots ]; then
-   rm -rf $TDIR/snapshots >>/dev/null 2>>/dev/null
-   ln -s $CNF_DATADIR/Snapshots $TDIR/snapshots >>/dev/null 2>>/dev/null
-   Log  "[INSTALL]"  "Creating snapshots symbolic link"
+if [ ! -L ${TDIR}/snapshots ]; then
+	rm -rf ${TDIR}/snapshots &>/dev/null
+	ln -s ${CNF_DATADIR}/Snapshots ${TDIR}/snapshots &>/dev/null
+	Log "[Install]" "Creating snapshots symbolic link"
 fi
-
-# --------------
 # Checking Tmp
-# --------------
-if [ ! -d $CNF_DATADIR/Tmp ]; then
-   Log  "[INSTALL]"  "Creating directory:$CNF_DATADIR/Tmp"
-   mkdir $CNF_DATADIR/Tmp >>/dev/null 2>>/dev/null
-   Log  "[INSTALL]"  "Result:$?"
+if [ ! -d ${CNF_DATADIR}/Tmp ]; then
+	Log "[Install]" "Creating directory: ${CNF_DATADIR}/Tmp"
+	mkdir ${CNF_DATADIR}/Tmp &>/dev/null
+	Log "[Install]" "Result: $?"
 fi
-
-# --------------
 # Checking Run
-# --------------
-if [ ! -d $CNF_DATADIR/Run ]; then
-   Log  "[INSTALL]"  "Creating directory:$CNF_DATADIR/Run"
-   mkdir $CNF_DATADIR/Run >>/dev/null 2>>/dev/null
-   Log  "[INSTALL]"  "Result:$?"
+if [ ! -d ${CNF_DATADIR}/Run ]; then
+	Log "[Install]" "Creating directory: ${CNF_DATADIR}/Run"
+	mkdir ${CNF_DATADIR}/Run &>/dev/null
+	Log "[Install]" "Result: $?"
 fi
-
-# --------------
 # Checking Rfid
-# --------------
-if [ ! -d $CNF_DATADIR/Rfid ]; then
-  Log  "[INSTALL]"  "Creating directory:$CNF_DATADIR/Rfid"
-  mkdir $CNF_DATADIR/Rfid >>/dev/null 2>>/dev/null
-  Log  "[INSTALL]"  "Result:$?"
+if [ ! -d ${CNF_DATADIR}/Rfid ]; then
+	Log "[Install]" "Creating directory: ${CNF_DATADIR}/Rfid"
+	mkdir ${CNF_DATADIR}/Rfid &>/dev/null
+	Log "[Install]" "Result: $?"
 fi
-
-# --------------
 # Checking Sounds
-# --------------
-if [ ! -d $CNF_DATADIR/Sounds ]; then
- Log  "[INSTALL]"  "Creating directory:$CNF_DATADIR/Sounds"
- mkdir $CNF_DATADIR/Sounds >>/dev/null 2>>/dev/null
- Log  "[INSTALL]"  "Result:$?"
+if [ ! -d ${CNF_DATADIR}/Sounds ]; then
+	Log "[Install]" "Creating directory: ${CNF_DATADIR}/Sounds"
+	mkdir ${CNF_DATADIR}/Sounds &>/dev/null
+	Log "[Install]" "Result: $?"
 fi
-
-# --------------
 # Checking Stories
-# --------------
-if [ ! -d $CNF_DATADIR/Stories ]; then
- Log  "[INSTALL]"  "Creating directory:$CNF_DATADIR/Stories"
- mkdir $CNF_DATADIR/Stories >>/dev/null 2>>/dev/null
- Log  "[INSTALL]"  "Result:$?"
+if [ ! -d ${CNF_DATADIR}/Stories ]; then
+	Log "[Install]" "Creating directory: ${CNF_DATADIR}/Stories"
+	mkdir ${CNF_DATADIR}/Stories &>/dev/null
+	Log "[Install]" "Result: $?"
 fi
-
-# --------------
 # Checking Voice
-# --------------
-if [ ! -d $CNF_DATADIR/Voice ]; then
- Log  "[INSTALL]"  "Creating directory:$CNF_DATADIR/Voice"
- mkdir $CNF_DATADIR/Voice >>/dev/null 2>>/dev/null
- Log  "[INSTALL]"  "Result:$?"
+if [ ! -d ${CNF_DATADIR}/Voice ]; then
+	Log "[Install]" "Creating directory: ${CNF_DATADIR}/Voice"
+	mkdir ${CNF_DATADIR}/Voice &>/dev/null
+	Log "[Install]" "Result: $?"
 fi
-
-# --------------
-# Checking Moods
-# --------------
-if [ ! -d $CNF_DATADIR/Moods ]; then
-   Log  "[INSTALL]"  "Creating directory:$CNF_DATADIR/Moods"
-   mkdir $CNF_DATADIR/Moods >>/dev/null 2>>/dev/null
+# Checking Moods FR
+if [ ! -d ${CNF_DATADIR}/Moods/fr ]; then
+	mkdir -p ${CNF_DATADIR}/Moods/fr &>/dev/null
 fi
-
-# --------------
-# Checking FR Moods
-# --------------
-if [ ! -d $CNF_DATADIR/Moods/fr ]; then
-   mkdir $CNF_DATADIR/Moods/fr >>/dev/null 2>>/dev/null
-fi
-
-# --------------
-# Checking Apps
-# --------------
-if [ ! -d $CNF_DATADIR/Apps ]; then
-   mkdir $CNF_DATADIR/Apps >>/dev/null 2>>/dev/null
-fi
-
-# --------------
 # Checking Apps Radios
-# --------------
-if [ ! -d $CNF_DATADIR/Apps/Streams ]; then
-   mkdir $CNF_DATADIR/Apps/Streams >>/dev/null 2>>/dev/null
+if [ ! -d ${CNF_DATADIR}/Apps/Streams ]; then
+	mkdir -p ${CNF_DATADIR}/Apps/Streams &>/dev/null
 fi
-
-# --------------
 # Checking Apps Story
-# --------------
-if [ ! -d $CNF_DATADIR/Apps/Story ]; then
-   mkdir $CNF_DATADIR/Apps/Story >>/dev/null 2>>/dev/null
+if [ ! -d ${CNF_DATADIR}/Apps/Story/Data ]; then
+	mkdir -p ${CNF_DATADIR}/Apps/Story/Data &>/dev/null
 fi
-
-if [ ! -d $CNF_DATADIR/Apps/Story/Data ]; then
-   mkdir $CNF_DATADIR/Apps/Story/Data >>/dev/null 2>>/dev/null
-fi
-
-# --------------
 # Checking crontab directories
-# --------------
-if [ ! -d /usr/spool ]; then
-   mkdir /usr/spool >>/dev/null 2>>/dev/null
-fi
-
-if [ ! -d /usr/spool/cron ]; then
-   mkdir /usr/spool/cron >>/dev/null 2>>/dev/null
-fi
-
 if [ ! -d /usr/spool/cron/crontabs ]; then
-   mkdir /usr/spool/cron/crontabs >>/dev/null 2>>/dev/null
+	mkdir -p /usr/spool/cron/crontabs &>/dev/null
+fi
+
+# Create pipes for Program Control
+#TODO to clean? mplayer-control instead of mpd_control?
+#if [ ! -f /tmp/mpd_control ]; then
+#	mknod /tmp/mpd_control p  &>/dev/null
+#fi
+if [ ! -f /tmp/mplayer-control ]; then
+	Log "[Install]" "Creating mplayer control pipe"
+	mknod /tmp/mplayer-control p &>/dev/null
 fi
 
 # --------------
 # Get local version
 # --------------
-if [ ! -f $TDIR/ok.version ]; then
-   LV=-1
-else
-   LV=$(cat $TDIR/ok.version  )
+LV=-1
+if [ -f ${TDIR}/ok.version ]; then
+	LV=$(cat ${TDIR}/ok.version)
 fi
-
-# Create pipes for Program Control
-#if [ ! -f /tmp/mpd_control ]; then
-#   mknod /tmp/mpd_control p  >>/dev/null 2>>/dev/null
-#fi
-
-if [ ! -f /tmp/mplayer-control ]; then
-   Log  "[INSTALL]"  "Creating mplayer control pipe"
-   mknod /tmp/mplayer-control p  >>/dev/null 2>>/dev/null
-fi
-
 # Get server Version
-rm $TDIR/server.ok.version >>/dev/null 2>>/dev/null
-echo "----------------------------------------"
-Log  "[INSTALL]"  "Downloading $CNF_BASE_URL/ok.version"
-wget $CNF_BASE_URL/ok.version -q -O $TDIR/server.ok.version >>/dev/null 2>>/dev/null
-if [ ! -e "$TDIR/server.ok.version" ] ; then
-  RV=0
-else
-  RV=$(cat $TDIR/server.ok.version )
+Log "[Install]" "Downloading ${CNF_BASE_URL}/ok.version"
+rm ${TDIR}/server.ok.version &>/dev/null
+wget ${CNF_BASE_URL}/ok.version -q -O ${TDIR}/server.ok.version &>/dev/null
+RV=0
+if [ -e "${TDIR}/server.ok.version" ]; then
+	RV=$(cat ${TDIR}/server.ok.version)
 fi
 
 # Display version
-echo -n "Server Version : "
-Log  "[INSTALL]"  "Remote version : $RV"
-echo $RV
-echo -n "Local Version  : "
-echo $LV
-Log  "[INSTALL]"  "Local version : $LV"
+#TODO Why not use SendResponse? Rewrite not done yet
+echo "Server: OpenKarotz WebServer 1.0 - Massalia 2013"
+echo "Connection: close"
+echo "Accept-Ranges: bytes"
+echo "Content-type: text/plain"
+echo ""
+echo "----------------------------------------"
+echo "Server Version: "${RV}
+echo "Local Version: "${LV}
+Log "[Install]" "Remote version: ${RV}"
+Log "[Install]" "Local version: ${LV}"
 
-if [ "${LV:-0}" -ge "${RV:-0}" ] ; then
+if [ ${LV:-0} -ge ${RV:-0} ]; then
 	echo "----------------------------------------"
-  	echo "No update needed"
+	echo "No update needed"
 else
-    # Update local version
-    rm -f $TDIR/ok.version >>/dev/null 2>>/dev/null
-    mv $TDIR/server.ok.version $TDIR/ok.version >>/dev/null 2>>/dev/null
-    echo "Web Root  : "$TDIR
-    echo "Data Root : "$CNF_DATADIR
+	# Update local version
+	rm -f ${TDIR}/ok.version &>/dev/null
+	mv ${TDIR}/server.ok.version ${TDIR}/ok.version &>/dev/null
+	echo "Web Root: "${TDIR}
+	echo "Data Root: "${CNF_DATADIR}
+	# Get Web Server Config File
+	echo "----------------------------------------"
+	echo "Updating Web Server Config"
+	echo "----------------------------------------"
+	Log "[Install]" "Downloading ${CNF_BASE_URL}/httpd.conf"
+	wget ${CNF_BASE_URL}/httpd.conf -O /usr/httpd.conf -q &>/dev/null
+	echo "----------------------------------------"
+	echo "Updating startup Script"
+	echo "----------------------------------------"
+	#TODO WARNING backup.200 file
+	if [ ! -e "/usr/yaffs_start.sh.backup.200" ]; then
+		Log "[Install]" "Updating Startup Script"
+		cp /usr/yaffs_start.sh /usr/yaffs_start.sh.backup.200
+		cp /karotz/OkSetup/yaffs_start.sh /usr/yaffs_start.sh
+		chmod 755 /usr/yaffs_start.sh
+	fi
 
-    # Get Web Server Config File
-    echo "----------------------------------------"
-    echo "Updating Web Server Config"
-    echo "----------------------------------------"
-    Log  "[INSTALL]"  "Downloading $CNF_BASE_URL/httpd.conf"
-    wget $CNF_BASE_URL/httpd.conf -O /usr/httpd.conf -q > /dev/null 2>>/dev/null
+	# Updating /www
 
-    echo "----------------------------------------"
-    echo "Updating startup Script"
-    echo "----------------------------------------"
-    if [ ! -e "/usr/yaffs_start.sh.backup.200" ]; then
-     Log  "[INSTALL]"  "Updating Startup Script"
-     cp /usr/yaffs_start.sh /usr/yaffs_start.sh.backup.200
-     cp /karotz/OkSetup/yaffs_start.sh /usr/yaffs_start.sh
-     chmod 777 /usr/yaffs_start.sh
-    fi
+	# Creating cron path
+	#/var/spool/cron/crontabs
+	mkdir -p /var/spool/cron/crontabs &>/dev/null
 
-    # Updating /www
-    #URL=$1
-    #RDIR=$2
-    #LDIR=$3
-    #NAME=$4
-    #GROUP=$5
-
-    # Creating cron path
-    #/var/spool/cron/crontabs
-    mkdir /var/spool >>/dev/null 2>>/dev/null
-    mkdir /var/spool/cron >>/dev/null 2>>/dev/null
-    mkdir /var/spool/cron/crontabs >>/dev/null 2>>/dev/null
-
-    echo "Updating : Scripts"
-    echo "  Saving config"
-    cp $TDIR/cgi-bin/setup.inc /tmp/setup.inc >>/dev/null 2>>/dev/null
-    echo "  Downloading"
-    Log  "[INSTALL]"  "Downloading $CNF_BASE_URL/www.zip"
-    wget $CNF_BASE_URL/www.zip -O /tmp/www.zip -q >>/dev/null 2>>/dev/null
-    if [ -e "/tmp/www.zip" ]; then
-      echo "  Installing"
-      unzip  -o /tmp/www.zip  -d /usr/www >>/dev/null 2>>/dev/null
-      rm -f /tmp/www.zip >>/dev/null 2>>/dev/null
-      echo "  Checking permissions"
-      chmod -R 777 /usr/www/cgi-bin >>/dev/null 2>>/dev/null
-      echo "  Restoring config"
-      cp /tmp/setup.inc $TDIR/cgi-bin/setup.inc >>/dev/null 2>>/dev/null
-    else
-      echo "Download ERROR1. Exiting"
-      exit 1
-    fi
-    echo "----------------------------------------"
-    echo "Updating : Voices"
-    echo "  Downloading"
-    Log  "[INSTALL]"  "Downloading $CNF_BASE_URL/voice.zip"
-    wget $CNF_BASE_URL/voice.zip -O /tmp/voice.zip -q >>/dev/null 2>>/dev/null
-    if [ -e "/tmp/voice.zip" ]; then
-      echo "  Installing"
-      unzip  -o /tmp/voice.zip  -d $CNF_DATADIR/Voice >>/dev/null 2>>/dev/null
-      rm -f /tmp/voice.zip >>/dev/null 2>>/dev/null
-    else
-      echo "Download ERROR1. Exiting"
-      exit 1
-    fi
-    echo "----------------------------------------"
-    echo "Updating : Sounds"
-    echo "  Downloading"
-    Log  "[INSTALL]"  "Downloading $CNF_BASE_URL/sounds.zip"
-    wget $CNF_BASE_URL/sounds.zip -O /tmp/sounds.zip -q >>/dev/null 2>>/dev/null
-    if [ -e "/tmp/sounds.zip" ]; then
-      echo "  Installing"
-      unzip  -o /tmp/sounds.zip  -d $CNF_DATADIR/Sounds >>/dev/null 2>>/dev/null
-      rm -f /tmp/sounds.zip >>/dev/null 2>>/dev/null
-    else
-      echo "Download ERROR1. Exiting"
-       exit 1
-    fi
-
-    echo "----------------------------------------"
-    echo "Updating : Radios"
-    echo "  Downloading"
-    Log  "[INSTALL]"  "Downloading $CNF_BASE_URL/radios.zip"
-    wget $CNF_BASE_URL/radios.zip -O /tmp/radios.zip -q >>/dev/null 2>>/dev/null
-    if [ -e "/tmp/radios.zip" ]; then
-      echo "  Installing"
-      unzip  -o /tmp/radios.zip  -d $CNF_DATADIR/Apps/Streams >>/dev/null 2>>/dev/null
-      rm -f /tmp/radios.zip >>/dev/null 2>>/dev/null
-    else
-      echo "Download ERROR1. Exiting"
-      exit 1
-    fi
+	echo "Updating: Scripts"
+	echo "  Saving config"
+	cp ${TDIR}/cgi-bin/setup.inc /tmp/setup.inc &>/dev/null
+	echo "  Downloading"
+	Log "[Install]" "Downloading ${CNF_BASE_URL}/www.zip"
+	wget ${CNF_BASE_URL}/www.zip -O /tmp/www.zip -q &>/dev/null
+	if [ -e "/tmp/www.zip" ]; then
+		echo "  Installing"
+		unzip -o /tmp/www.zip -d /www &>/dev/null
+		rm -f /tmp/www.zip &>/dev/null
+		echo "  Checking permissions"
+		chmod -R 755 /www/cgi-bin &>/dev/null
+		echo "  Restoring config"
+		cp /tmp/setup.inc ${TDIR}/cgi-bin/setup.inc &>/dev/null
+	else
+		echo "Download ERROR1. Exiting"
+		exit 1
+	fi
+	echo "----------------------------------------"
+	echo "Updating: Voices"
+	echo "  Downloading"
+	Log "[Install]" "Downloading ${CNF_BASE_URL}/voice.zip"
+	wget ${CNF_BASE_URL}/voice.zip -O /tmp/voice.zip -q &>/dev/null
+	if [ -e "/tmp/voice.zip" ]; then
+		echo "  Installing"
+		unzip -o /tmp/voice.zip -d ${CNF_DATADIR}/Voice &>/dev/null
+		rm -f /tmp/voice.zip &>/dev/null
+	else
+		echo "Download ERROR1. Exiting"
+		exit 1
+	fi
+	echo "----------------------------------------"
+	echo "Updating: Sounds"
+	echo "  Downloading"
+	Log "[Install]" "Downloading ${CNF_BASE_URL}/sounds.zip"
+	wget ${CNF_BASE_URL}/sounds.zip -O /tmp/sounds.zip -q &>/dev/null
+	if [ -e "/tmp/sounds.zip" ]; then
+		echo "  Installing"
+		unzip -o /tmp/sounds.zip -d ${CNF_DATADIR}/Sounds &>/dev/null
+		rm -f /tmp/sounds.zip &>/dev/null
+	else
+		echo "Download ERROR1. Exiting"
+		exit 1
+	fi
+	echo "----------------------------------------"
+	echo "Updating: Radios"
+	echo "  Downloading"
+	Log "[Install]" "Downloading ${CNF_BASE_URL}/radios.zip"
+	wget ${CNF_BASE_URL}/radios.zip -O /tmp/radios.zip -q &>/dev/null
+	if [ -e "/tmp/radios.zip" ]; then
+		echo "  Installing"
+		unzip -o /tmp/radios.zip -d ${CNF_DATADIR}/Apps/Streams &>/dev/null
+		rm -f /tmp/radios.zip &>/dev/null
+	else
+		echo "Download ERROR1. Exiting"
+		exit 1
+	fi
 fi
 echo "----------------------------------------"
-echo  Done
-echo   You Must now manually Download Apps
-echo   from Update Tab
+echo Done
+echo You Must now manually download Apps
+echo from Update tab
 echo "----------------------------------------"
 echo "Rabbit will restart to finish Instllation."
 
-Log  "[INSTALL]"  "Finished"
-Log  "[INSTALL]"  "Rebooting in 20 seconds"
+Log "[Install]" "Finished"
+Log "[Install]" "Rebooting in 20 seconds"
 
-#/usr/bin/madplay $CNF_DATADIR/Voice/install_ok.mp3 >>/dev/null 2>>/dev/null
+#/usr/bin/madplay ${CNF_DATADIR}/Voice/install_ok.mp3 &>/dev/null
 if [ -e "/tmp/end.mp3" ]; then
-  /usr/bin/madplay /tmp/end.mp3 >>/dev/null 2>>/dev/null
+	/usr/bin/madplay /tmp/end.mp3 &>/dev/null
 fi
 
 killall led
-/karotz/bin/led -l $RED -p "000000" -d 700 &
+#TODO: could not be ? Leds ${RED} ${BLACK} 1
+/karotz/bin/led -l ${RED} -p ${BLACK} -d 700 &
 
 reboot -d 10
-
-
-
-
-
-
